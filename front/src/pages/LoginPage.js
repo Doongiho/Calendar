@@ -1,48 +1,67 @@
-import React from 'react'; // React 라이브러리 가져오기
+import React from 'react';
+import './LoginPage.css';
 
-const LoginPage = () => {
-  // LoginPage라는 함수형 컴포넌트 선언
+export default function LoginPage() {
   return (
-    <div
-      style={{
-        width: '100vw', // 화면 전체 너비
-        height: '100vh', // 화면 전체 높이
-        backgroundColor: '#4B5AE4', // 배경색 설정
-        display: 'flex', // Flexbox 레이아웃 적용
-        justifyContent: 'space-between', // 좌우 여백과 정렬
-        alignItems: 'center', // 세로 방향 중앙 정렬
-        flexDirection: 'row', // 요소들을 가로로 배치
-        padding: '0 100px', // 좌우 여백
-      }}
-    >
-      <div style={{ display: 'flex', flexDirection: 'column' }}>
-        <h1 style={{ color: 'white', fontSize: '48px', margin: '10px 0' }}>
-          친구들과
-        </h1>
-        <h1 style={{ color: 'white', fontSize: '48px', margin: '10px 0' }}>
-          편하게
-        </h1>
-        <h1 style={{ color: 'white', fontSize: '48px', margin: '10px 0' }}>
-          일정을 공유하자
-        </h1>
-      </div>
+    <div className="login-container">
+      <div className="login-content">
+        {/* 왼쪽 */}
+        <div className="login-left">
+          <img src="/img/ERY 1.png" alt="로고" className="login-logo" />
+          <div className="login-message">
+            <div>친구들과</div>
+            <div>편하게</div>
+            <div>일정공유하자</div>
+          </div>
+        </div>
 
-      <div
-        style={{
-          width: '650px', // 박스 너비
-          height: '600px', // 박스 높이
-          backgroundColor: 'white', // 흰색 박스
-          borderRadius: '20px', // 꼭지점 라운드 처리
-          //boxShadow: '0 4px 10px rgba(0, 0, 0, 0.1)', // 살짝 그림자
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-        }}
-      >
-        <p>이메일과 비밀번호를 입력해주세요</p>
+        {/* 오른쪽 */}
+        <div className="login-right">
+          <div className="login-box">
+            <div className="login-inner">
+              <div className="login-title">
+                이메일과 비밀번호를
+                <br />
+                입력해주세요.
+              </div>
+
+              <label htmlFor="email" className="login-label">
+                이메일
+              </label>
+              <input
+                id="email"
+                type="email"
+                placeholder="sample@gmail.com"
+                className="login-input"
+              />
+
+              <label htmlFor="password" className="login-label">
+                비밀번호
+              </label>
+              <input
+                id="password"
+                type="password"
+                placeholder="영문, 숫자, 특수문자 포함 8자 이상"
+                className="login-input"
+              />
+
+              <button className="login-button" disabled>
+                로그인
+              </button>
+
+              <div className="login-footer">
+                <label className="checkbox">
+                  <input type="checkbox" />
+                  <span>자동 로그인</span>
+                </label>
+                <a href="#" className="signup-link">
+                  회원가입
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
-};
-
-export default LoginPage; // LoginPage 컴포넌트 내보내기
+}

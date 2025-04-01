@@ -1,0 +1,137 @@
+/* 전체 배경 */
+.login-container {
+  width: 100vw;
+  height: 100vh;
+  background-color: #3c5aff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* 전체 콘텐츠 정렬 */
+.login-content {
+  display: flex;
+  width: 1920px;
+  height: 1080px;
+  padding: 0 100px;
+  box-sizing: border-box;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* 왼쪽 영역 */
+.login-left {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  position: relative;
+  height: 100%;
+}
+
+/* 사진 */
+.login-logo {
+  width: 80px;
+  height: 80px;
+  position: absolute;
+  top: 150px;
+  left: 0;
+}
+
+.login-message {
+  color: white;
+  font-size: 48px;
+  font-weight: bold;
+  line-height: 68px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding-left: 120px;
+}
+
+/* 오른쪽 영역 */
+.login-right {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+
+/* 로그인 박스 */
+.login-box {
+  width: 648px;
+  height: 598px;
+  background-color: white;
+  border-radius: 20px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+  display: flex; /* 중앙 정렬을 위한 설정 */
+  align-items: center;
+  justify-content: center;
+}
+
+.login-inner {
+  width: 100%;
+  padding: 0 85px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* 폼 내부 요소들 */
+.login-title {
+  font-size: 22px; /* 큼직하고 */
+  font-weight: 700; /* 굵고 */
+  color: #222;
+  line-height: 1.6;
+  margin-bottom: 32px;
+}
+
+.login-label {
+  font-size: 14px;
+  color: #555;
+  margin-bottom: 6px;
+  display: block;
+}
+
+.login-input {
+  width: 100%;
+  padding: 14px 16px;
+  margin-bottom: 24px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.login-button {
+  width: 100%;
+  padding: 14px 0;
+  background-color: #dcdcdc;
+  color: white;
+  font-weight: 600;
+  border: none;
+  border-radius: 6px;
+  margin-bottom: 16px;
+  cursor: not-allowed;
+}
+
+.login-footer {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  align-items: center;
+}
+
+.checkbox {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #555;
+}
+
+.signup-link {
+  color: #3c5aff;
+  text-decoration: none;
+}
+
+.signup-link:hover {
+  text-decoration: underline;
+}
