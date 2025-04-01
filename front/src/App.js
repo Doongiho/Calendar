@@ -1,9 +1,10 @@
-// src/App.js
 import React from 'react';
+import MyCalendar from './pages/MyCalendar.js';
 
 function App() {
   return (
-    <div>
+    <div className="App">
+      <MyCalendar />
     </div>
   );
 }
