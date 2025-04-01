@@ -1,5 +1,6 @@
 import React from 'react';
 import './LoginPage.css';
+import { Link } from 'react-router-dom';
 
 export default function LoginPage() {
   return (
@@ -54,9 +55,9 @@ export default function LoginPage() {
                   <input type="checkbox" />
                   <span>자동 로그인</span>
                 </label>
-                <a href="#" className="signup-link">
+                <Link to="/signup" className="signup-link">
                   회원가입
-                </a>
+                </Link>
               </div>
             </div>
           </div>

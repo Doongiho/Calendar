@@ -8,6 +8,14 @@
   align-items: center;
 }
 
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow: hidden; /* ← 스크롤 막기 */
+}
+
 /* 전체 콘텐츠 정렬 */
 .login-content {
   display: flex;
@@ -60,6 +68,18 @@
 .login-box {
   width: 648px;
   height: 598px;
+  background-color: white;
+  border-radius: 20px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+  display: flex; /* 중앙 정렬을 위한 설정 */
+  align-items: center;
+  justify-content: center;
+}
+
+/* 회원가입 박스 */
+.signup-box {
+  width: 648px;
+  height: 792px;
   background-color: white;
   border-radius: 20px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
@@ -134,4 +154,35 @@
 
 .signup-link:hover {
   text-decoration: underline;
+}
+
+.signup-title {
+  font-size: 22px; /* 큼직하고 */
+  font-weight: 700; /* 굵고 */
+  color: #222;
+  line-height: 1.6;
+  margin-bottom: 32px;
+  text-align: center;
+}
+
+.gender-toggle {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.gender-toggle button {
+  padding: 10px 20px;
+  border: 1px solid #ccc;
+  background-color: white;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  color: #555;
+}
+
+.gender-toggle button.active {
+  background-color: #3c5aff;
+  color: white;
+  border-color: #3c5aff;
 }
