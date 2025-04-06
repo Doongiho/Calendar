@@ -7,7 +7,10 @@ import InputField from "components/InputField/InputField";
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-
+  const isValidInput = () => {
+    const emailRegex = /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/;
+    return emailRegex.test(email) && password;
+  };
   const handleLogin = async (e) => {
     e.preventDefault();
 
@@ -71,7 +74,14 @@ export default function LoginPage() {
                 />
 
                 {/* 로그인 버튼 */}
-                <button type="submit" className="login-button">
+                <button
+                  type="submit"
+                  className="login-button"
+                  style={{
+                    backgroundColor: isValidInput() ? "#545cf5" : "#dcdcdc",
+                    cursor: isValidInput() ? "pointer" : "not-allowed",
+                  }}
+                >
                   로그인
                 </button>
               </form>
