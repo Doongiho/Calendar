@@ -1,34 +1,30 @@
-import React, { useState } from 'react';
-import './LoginPage.css';
-import axios from 'axios';
-import { Link } from 'react-router-dom';
+import React, { useState } from "react";
+import "./LoginPage.css";
+import { Link } from "react-router-dom";
+import { loginUser } from "api/userApi"; 
 import InputField from "components/InputField/InputField"; 
 
 export default function LoginPage() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
   const handleLogin = async (e) => {
     e.preventDefault();
 
-    // ✅ 1. 예외처리: 필수 입력
+    // ✅ 예외 처리: 필수 입력 확인
     if (!email || !password) {
-      alert('이메일과 비밀번호를 모두 입력해주세요.');
+      alert("이메일과 비밀번호를 모두 입력해주세요.");
       return;
     }
 
-    // ✅ 2. Axios로 백엔드에 전송
+    // ✅ 로그인 요청 처리
     try {
-      const response = await axios.post('http://localhost:4000/login', {
-        email,
-        password,
-      });
-
-      alert('로그인 성공!');
-      console.log('서버 응답:', response.data);
+      const data = await loginUser(email, password);
+      alert("로그인 성공!");
+      console.log("서버 응답:", data);
     } catch (error) {
-      alert('이메일 또는 비밀번호가 일치하지 않습니다.');
-      console.error('로그인 실패:', error);
+      alert("이메일 또는 비밀번호가 일치하지 않습니다.");
+      console.error("로그인 실패:", error);
     }
   };
 
@@ -55,7 +51,7 @@ export default function LoginPage() {
                 입력해주세요.
               </div>
 
-               {/* 로그인 폼 */}
+              {/* 로그인 폼 */}
               <form onSubmit={handleLogin}>
                 <InputField
                   id="email"
