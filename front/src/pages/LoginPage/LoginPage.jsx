@@ -1,33 +1,40 @@
 import React, { useState } from "react";
 import "./LoginPage.css";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { loginUser } from "api/userApi"; 
 import InputField from "components/InputField/InputField"; 
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const navigate = useNavigate();
+  
   const isValidInput = () => {
     const emailRegex = /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/;
     return emailRegex.test(email) && password;
   };
+
   const handleLogin = async (e) => {
     e.preventDefault();
 
-    // ✅ 예외 처리: 필수 입력 확인
     if (!email || !password) {
       alert("이메일과 비밀번호를 모두 입력해주세요.");
       return;
     }
 
-    // ✅ 로그인 요청 처리
     try {
-      const data = await loginUser(email, password);
-      alert("로그인 성공!");
-      console.log("서버 응답:", data);
+      // 로그인 요청
+      const loginResponse = await loginUser(email, password);
+      console.log("로그인 응답:", loginResponse);
+
+      const userId = loginResponse.data?.userId; 
+      if (!userId) throw new Error("사용자 ID를 찾을 수 없습니다.");
+
+      navigate(`/MyCalendar/${userId}`, { state: { user: loginResponse.data } });
+
     } catch (error) {
-      alert("이메일 또는 비밀번호가 일치하지 않습니다.");
-      console.error("로그인 실패:", error);
+      alert("로그인 실패. 이메일 또는 비밀번호를 확인하세요.");
+      console.error("로그인 오류:", error);
     }
   };
 
