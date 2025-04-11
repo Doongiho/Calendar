@@ -1,0 +1,15 @@
+
+#root{
+    height: 100vh;
+    width: 100vw;
+}
+.calendardiv{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow-y:scroll;
+}
+@media screen and (max-width: 360px) {
+    
+}

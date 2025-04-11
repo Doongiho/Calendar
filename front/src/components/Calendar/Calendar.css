@@ -1,0 +1,128 @@
+@import url(https://unpkg.com/boxicons@2.1.1/css/boxicons.min.css);
+:root {
+  --date-text-height: 50px;
+}
+
+.calendar-container {
+  --calendar-font-size: calc(var(--calendar-width) * 0.01);
+  --calendar-primary-color: #43c37a;
+  --calendar-grid-item-size: calc((var(--calendar-width) / 16));
+  --calendar-grid-item-sizes: calc((var(--calendar-grid-item-size)) - 50px);
+  border-radius: 10px;
+  font-size: var(--calendar-font-size);
+  max-width: calc((var(--calendar-width)) / 0.8);
+  width: 90%;
+  padding-bottom: 20px;
+  min-width: calc((var(--calendar-width)) / 7);
+}
+
+.calendar-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 15px;
+  color: black;
+  border-radius: 10px 10px 0 0;
+  width: 100%;
+  margin: auto;
+  max-width: 40%;
+}
+
+.calendar-nav > .calendar-title {
+  text-align: center;
+}
+
+.calendar-nav > .calendar-title > .month {
+  font-size: 1.4em;
+}
+
+.calendar-nav > .prev,
+.calendar-nav > .next {
+  width: 30px;
+  height: 30px;
+  text-align: center;
+  line-height: 30px;
+  font-size: 1.8em;
+  cursor: pointer;
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  margin:auto;
+}
+
+.calendar-grid > .day-box {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: 1px solid #eee;
+    height: calc((var(--calendar-width)) / 14);
+    gap: 5px;
+    padding: 5px 0;
+    flex-direction: column;
+    background: #fff;
+}
+
+.date-text {
+    flex: 1; 
+    text-align: center; 
+    width: auto; 
+    max-width: none; 
+    aspect-ratio: 1 / 1;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.todo-container {
+    flex: 5; 
+    display: flex;
+    flex-direction: column;
+    width: 90%; 
+    text-align: center;
+}
+
+.calendar-grid > .day{
+    background: #43c37a;
+    color: #fff;
+    border: 1px solid #eee;
+    text-transform: uppercase;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 5px;
+}
+
+.calendar-grid > div:not(.day) {
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.calendar-grid > .sunday {
+  color: red;
+}
+
+.muted {
+    color: rgba(0, 0, 0, 0.3);
+}
+
+ .today {
+    background-color: var(--calendar-primary-color);
+    color: #fff;
+}
+
+.calendar-grid > div:not(.day):hover,
+.calendar-grid > .selected,
+.calendar-grid > .selected.muted {
+  background-color: #e9e9e9;
+  border: 1px solid #eee;
+
+}
+.todo-list {
+    background-color: var(--calendar-primary-color);
+    margin: 2px;
+    border-radius: 5px;
+}
+
