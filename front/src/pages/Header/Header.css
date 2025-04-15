@@ -1,0 +1,66 @@
+header{
+    width: 100%;
+}
+.pc-header{
+    justify-content: space-between;
+    width: 90%;
+    padding-top: 20px;
+    margin: auto;
+}
+.mo-header{
+    justify-content: space-between;
+    width: 90%;
+    padding-top: 20px;
+    margin: auto;
+}
+.title{
+    font-size: 1.5rem;
+}
+
+.submenu{
+    display: flex;
+    justify-content: space-between;
+    width: 10%;
+}
+.alarm{
+ cursor: pointer;
+}
+
+.mypage{
+ cursor: pointer;
+}
+
+.room{
+
+    cursor: pointer;
+}
+
+.submenu span{
+    font-size: 2.5rem;
+}
+
+.mypage span{
+    font-size: 2.5rem;
+}
+
+.room span{
+    font-size: 2.5rem;
+}
+
+@media (max-width: 767px) {
+    .mo-header {
+        display: flex;
+    }
+    .pc-header{
+        display: none;
+    }
+  }
+
+  @media (min-width: 768px) {
+    .mo-header {
+        display: none;
+    }
+    .pc-header{
+        display: flex;
+    }
+  }
