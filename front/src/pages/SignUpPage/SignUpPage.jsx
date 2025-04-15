@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import { Link, useNavigate } from 'react-router-dom';
+import { registerUser } from 'api/signUpApi';
+import InputField from 'components/InputField/InputField'; // ✅ InputField 사용
 
 export default function SignUpPage() {
   const [email, setEmail] = useState('');
@@ -7,6 +9,8 @@ export default function SignUpPage() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [name, setName] = useState('');
   const [gender, setGender] = useState(null); // null: 선택 안 함
+
+  const navigate = useNavigate();
 
   const handleGenderToggle = (value) => {
     setGender(value);
@@ -16,51 +20,37 @@ export default function SignUpPage() {
     return email.includes('@') && email.includes('.');
   };
 
+  const isValidInput = () => {
+    return (
+      validateEmail(email) &&
+      password &&
+      confirmPassword &&
+      password === confirmPassword &&
+      name.trim() &&
+      gender !== null
+    );
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // ✅ 예외처리
-    if (!validateEmail(email)) {
-      alert('이메일 형식에 맞춰주세요.');
+    if (!isValidInput()) {
+      alert('입력값을 다시 확인해주세요.');
       return;
     }
-
-    if (!password) {
-      alert('비밀번호를 입력해주세요.');
-      return;
-    }
-
-    if (password !== confirmPassword) {
-      alert('비밀번호가 일치하지 않습니다.');
-      return;
-    }
-
-    if (!name.trim()) {
-      alert('이름을 입력해주세요.');
-      return;
-    }
-
-    if (gender === null) {
-      alert('성별을 선택해주세요.');
-      return;
-    }
-
-    // ✅ 모든 조건 만족 시, 전송
-    const signUpData = {
-      email,
-      password,
-      confirmPassword,
-      name,
-      gender,
-    };
 
     try {
-      const response = await axios.post(
-        'http://localhost:4000/signup',
-        signUpData
+      const response = await registerUser(
+        email,
+        password,
+        confirmPassword,
+        name,
+        gender
       );
-      console.log('회원가입 성공:', response.data);
-      alert('회원가입이 완료되었습니다!');
+      console.log('회원가입 성공:', response);
+
+      alert('회원가입이 완료되었습니다! 🎉');
+      navigate('/');
     } catch (error) {
       console.error('회원가입 실패:', error);
       alert('회원가입 중 오류가 발생했습니다.');
@@ -86,52 +76,40 @@ export default function SignUpPage() {
             <div className="login-inner">
               <div className="signup-title">회원가입</div>
               <form onSubmit={handleSubmit}>
-                <label className="login-label" htmlFor="email">
-                  이메일
-                </label>
-                <input
+                <InputField
                   id="email"
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="login-input"
                   placeholder="sample@gmail.com"
+                  label="이메일"
                 />
 
-                <label className="login-label" htmlFor="password">
-                  비밀번호
-                </label>
-                <input
+                <InputField
                   id="password"
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="login-input"
                   placeholder="비밀번호 입력 (8자 이상)"
+                  label="비밀번호"
                 />
 
-                <label className="login-label" htmlFor="confirmPassword">
-                  비밀번호 확인
-                </label>
-                <input
+                <InputField
                   id="confirmPassword"
                   type="password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="login-input"
                   placeholder="비밀번호 다시 입력"
+                  label="비밀번호 확인"
                 />
 
-                <label className="login-label" htmlFor="name">
-                  이름
-                </label>
-                <input
+                <InputField
                   id="name"
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="login-input"
                   placeholder="이름 입력"
+                  label="이름"
                 />
 
                 <label className="login-label">성별</label>
@@ -152,10 +130,24 @@ export default function SignUpPage() {
                   </button>
                 </div>
 
-                <button type="submit" className="login-button">
+                <button
+                  type="submit"
+                  className="login-button"
+                  disabled={!isValidInput()}
+                  style={{
+                    backgroundColor: isValidInput() ? '#545cf5' : '#dcdcdc',
+                    cursor: isValidInput() ? 'pointer' : 'not-allowed',
+                  }}
+                >
                   회원가입
                 </button>
               </form>
+
+              <div className="login-footer">
+                <Link to="/login" className="signup-link">
+                  로그인으로 돌아가기
+                </Link>
+              </div>
             </div>
           </div>
         </div>
