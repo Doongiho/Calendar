@@ -3,10 +3,12 @@ import "./LoginPage.css";
 import { Link, useNavigate } from "react-router-dom";
 import { loginUser } from "api/userApi"; 
 import InputField from "components/InputField/InputField"; 
+import { useUser } from "../../contexts/UserContext";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const { setUser } = useUser();
   const navigate = useNavigate();
   
   const isValidInput = () => {
@@ -25,6 +27,7 @@ export default function LoginPage() {
     try {
       // 로그인 요청
       const loginResponse = await loginUser(email, password);
+      setUser(loginResponse.data);
       console.log("로그인 응답:", loginResponse);
 
       const userId = loginResponse.data?.userId; 
