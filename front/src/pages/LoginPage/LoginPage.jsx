@@ -1,16 +1,16 @@
-import React, { useState } from "react";
-import "./LoginPage.css";
-import { Link, useNavigate } from "react-router-dom";
-import { loginUser } from "api/userApi"; 
-import InputField from "components/InputField/InputField"; 
-import { useUser } from "../../contexts/UserContext";
+import React, { useState } from 'react';
+import './LoginPage.css';
+import { Link, useNavigate } from 'react-router-dom';
+import { loginUser } from 'api/userApi';
+import InputField from 'components/InputField/InputField';
+import { useUser } from '../../contexts/UserContext';
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const { setUser } = useUser();
   const navigate = useNavigate();
-  
+
   const isValidInput = () => {
     const emailRegex = /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/;
     return emailRegex.test(email) && password;
@@ -20,7 +20,7 @@ export default function LoginPage() {
     e.preventDefault();
 
     if (!email || !password) {
-      alert("이메일과 비밀번호를 모두 입력해주세요.");
+      alert('이메일과 비밀번호를 모두 입력해주세요.');
       return;
     }
 
@@ -28,16 +28,17 @@ export default function LoginPage() {
       // 로그인 요청
       const loginResponse = await loginUser(email, password);
       setUser(loginResponse.data);
-      console.log("로그인 응답:", loginResponse);
+      console.log('로그인 응답:', loginResponse);
 
-      const userId = loginResponse.data?.userId; 
-      if (!userId) throw new Error("사용자 ID를 찾을 수 없습니다.");
+      const userId = loginResponse.data?.userId;
+      if (!userId) throw new Error('사용자 ID를 찾을 수 없습니다.');
 
-      navigate(`/MyCalendar/${userId}`, { state: { user: loginResponse.data } });
-
+      navigate(`/MyCalendar/${userId}`, {
+        state: { user: loginResponse.data },
+      });
     } catch (error) {
-      alert("로그인 실패. 이메일 또는 비밀번호를 확인하세요.");
-      console.error("로그인 오류:", error);
+      alert('로그인 실패. 이메일 또는 비밀번호를 확인하세요.');
+      console.error('로그인 오류:', error);
     }
   };
 
@@ -88,8 +89,8 @@ export default function LoginPage() {
                   type="submit"
                   className="login-button"
                   style={{
-                    backgroundColor: isValidInput() ? "#545cf5" : "#dcdcdc",
-                    cursor: isValidInput() ? "pointer" : "not-allowed",
+                    backgroundColor: isValidInput() ? '#545cf5' : '#dcdcdc',
+                    cursor: isValidInput() ? 'pointer' : 'not-allowed',
                   }}
                 >
                   로그인
