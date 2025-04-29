@@ -44,7 +44,10 @@ export default function ScheduleForm({
         className="modal-overlay"
         onClick={onClose}
     >
-      <div className="schedule-form-modal">
+      <div
+        className="schedule-form-modal"
+        onClick={e => e.stopPropagation()}
+      >
         <button className="close-btn" onClick={onClose}>×</button>
         <form onSubmit={handleSubmit}>
           <label>제목</label>
