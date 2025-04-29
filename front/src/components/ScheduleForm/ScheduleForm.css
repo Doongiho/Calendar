@@ -1,0 +1,26 @@
+.modal-overlay {
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.3);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 1000;
+}
+.schedule-form-modal {
+  background: #fff; padding: 24px; border-radius: 12px; min-width: 320px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.16);
+  position: relative;
+}
+.close-btn {
+  position: absolute; top: 12px; right: 12px;
+  background: none; border: none; font-size: 1.5rem; cursor: pointer;
+}
+.schedule-form-modal label {
+  display: block; margin-top: 12px; font-weight: bold;
+}
+.schedule-form-modal input, .schedule-form-modal textarea {
+  width: 100%; margin-top: 4px; padding: 6px; border: 1px solid #ccc; border-radius: 4px;
+}
+.submit-btn {
+  margin-top: 16px; width: 100%; padding: 8px 0;
+  background: #545cf5; color: #fff; border: none; border-radius: 4px; font-weight: bold;
+  cursor: pointer;
+}

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import './Calendar.css'; 
+import ScheduleForm from "../ScheduleForm/ScheduleForm"
 
 const Calendar = ({ onDateSelect }) => {
   const DEFAULT_SIZE =  window.innerWidth; 
@@ -18,6 +19,10 @@ const Calendar = ({ onDateSelect }) => {
     'December',
   ];
   const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+  const [schedules, setSchedules] = useState([]);
+  const [showForm, setShowForm] = useState(false);
+  const [selectedDate, setSelectedDate] = useState("");
 
   const [currentDate, setCurrentDate] = useState(new Date());
   const currentYear = currentDate.getFullYear();
@@ -67,7 +72,13 @@ const Calendar = ({ onDateSelect }) => {
   };
 
   const handleDateClick = (date) => {
-    onDateSelect?.(formattedDate(date)); 
+    const dateStr = formattedDate(date);
+    setSelectedDate(dateStr);
+    setShowForm(true);
+    onDateSelect?.(dateStr);
+  };
+  const handleFormSubmit = (schedule) => {
+    setSchedules([...schedules, schedule]);
   };
 
   return (
@@ -80,37 +91,64 @@ const Calendar = ({ onDateSelect }) => {
         </div>
         <i className="next bx bx-caret-right" onClick={() => handleNavigationClick(1)}></i>
       </div>
+  
       <div className="calendar-grid">
         {dayNames.map((dayName) => (
-          <div key={dayName} className="day">
-            {dayName}
-          </div>
+          <div key={dayName} className="day">{dayName}</div>
         ))}
         {eachCalendarDates().map((date) => (
-        <div
+          <div
             key={formattedDate(date)}
             data-date={formattedDate(date)}
-            className={`day-box`}
+            className="day-box"
             onClick={() => handleDateClick(date)}
-        >
-            <div 
-                className={`${classNames(date)} date-text`}
-            > 
-                {date.getDate()}
+          >
+            <div className={`${classNames(date)} date-text`}>
+              {date.getDate()}
             </div>
             <div className="todo-container">
-                {/* <div className="todo-list" data-date={formattedDate(date)}>
-                    sss
-                </div>
-                    <div className="todo-list" data-date={formattedDate(date)}>
-                    sss
-                </div> */}
+              {/* 해당 날짜의 일정 표시 */}
+              {schedules
+                .filter(s => 
+                  s.startDate <= formattedDate(date) && 
+                  s.endDate >= formattedDate(date)
+                )
+                .map((s, idx) => (
+                  <div
+                    key={idx}
+                    className="todo-list"
+                    style={{ 
+                      background: s.color, 
+                      color: "#fff",
+                      padding: "2px 4px",
+                      borderRadius: "4px",
+                      margin: "2px 0",
+                      fontSize: "0.8em",
+                      whiteSpace: "nowrap",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis"
+                    }}
+                    title={s.title}
+                  >
+                    {s.title}
+                  </div>
+                ))}
             </div>
-        </div>
+          </div>
         ))}
       </div>
+  
+      {/* 일정 추가 폼 모달 */}
+      {showForm && (
+        <ScheduleForm
+          initialDate={selectedDate}
+          onClose={() => setShowForm(false)}
+          onSubmit={handleFormSubmit}
+        />
+      )}
     </div>
   );
+  
 };
 
 export default Calendar;
