@@ -125,7 +125,6 @@ const Calendar = ({ onDateSelect }) => {
                       margin: "2px 0",
                       fontSize: "0.8em",
                       whiteSpace: "nowrap",
-                      overflow: "hidden",
                       textOverflow: "ellipsis"
                     }}
                     title={s.title}
