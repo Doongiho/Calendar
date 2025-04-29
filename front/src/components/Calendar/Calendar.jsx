@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import './Calendar.css'; 
 import ScheduleForm from "../ScheduleForm/ScheduleForm"
-
+import ScheduleDetailModal  from "../ScheduleDetailModal/ScheduleDetailModal"
 const Calendar = ({ onDateSelect }) => {
   const DEFAULT_SIZE =  window.innerWidth; 
   const monthNames = [
@@ -27,6 +27,8 @@ const Calendar = ({ onDateSelect }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const currentYear = currentDate.getFullYear();
   const currentMonth = currentDate.getMonth();
+
+  const [selectedSchedule, setSelectedSchedule] = useState(null);
 
   const formattedDate = (date) => {
     const format = (n) => (n < 10 ? `0${n}` : `${n}`);
@@ -77,9 +79,11 @@ const Calendar = ({ onDateSelect }) => {
     setShowForm(true);
     onDateSelect?.(dateStr);
   };
+
   const handleFormSubmit = (schedule) => {
     setSchedules([...schedules, schedule]);
   };
+  
 
   return (
     <div className="calendar-container" style={{ '--calendar-width': `${DEFAULT_SIZE}px` }}>
@@ -92,7 +96,7 @@ const Calendar = ({ onDateSelect }) => {
         <i className="next bx bx-caret-right" onClick={() => handleNavigationClick(1)}></i>
       </div>
   
-      <div className="calendar-grid">
+     <div className="calendar-grid">
         {dayNames.map((dayName) => (
           <div key={dayName} className="day">{dayName}</div>
         ))}
@@ -107,7 +111,6 @@ const Calendar = ({ onDateSelect }) => {
               {date.getDate()}
             </div>
             <div className="todo-container">
-              {/* 해당 날짜의 일정 표시 */}
               {schedules
                 .filter(s => 
                   s.startDate <= formattedDate(date) && 
@@ -125,9 +128,14 @@ const Calendar = ({ onDateSelect }) => {
                       margin: "2px 0",
                       fontSize: "0.8em",
                       whiteSpace: "nowrap",
+                      overflow: "hidden",
                       textOverflow: "ellipsis"
                     }}
                     title={s.title}
+                    onClick={(e) => {
+                      e.stopPropagation(); // 중요: 날짜 클릭 이벤트 방지
+                      setSelectedSchedule(s);
+                    }}
                   >
                     {s.title}
                   </div>
@@ -136,7 +144,7 @@ const Calendar = ({ onDateSelect }) => {
           </div>
         ))}
       </div>
-  
+
       {/* 일정 추가 폼 모달 */}
       {showForm && (
         <ScheduleForm
@@ -145,9 +153,16 @@ const Calendar = ({ onDateSelect }) => {
           onSubmit={handleFormSubmit}
         />
       )}
+
+      {/* 일정 상세 모달 */} 
+      {selectedSchedule && (
+        <ScheduleDetailModal
+          schedule={selectedSchedule}
+          onClose={() => setSelectedSchedule(null)}
+        />
+      )}
     </div>
   );
-  
 };
 
 export default Calendar;
