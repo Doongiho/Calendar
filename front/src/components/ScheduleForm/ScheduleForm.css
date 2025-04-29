@@ -45,6 +45,16 @@
   border-radius: 4px;
 }
 
+.schedule-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.schedule-col {
+  flex: 1;
+}
+
 .submit-btn {
   margin-top: 16px;
   width: 100%;

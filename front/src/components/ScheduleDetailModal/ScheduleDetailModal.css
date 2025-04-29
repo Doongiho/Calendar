@@ -17,3 +17,18 @@
   font-size: 1.5em;
   cursor: pointer;
 }
+.edit-btn {
+  margin-top: 16px;
+  width: 100%;
+  padding: 8px 0;
+  background: #545cf5;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  font-weight: bold;
+  cursor: pointer;
+}
+.btn-group{
+    display: flex;
+    gap: 10px;
+}

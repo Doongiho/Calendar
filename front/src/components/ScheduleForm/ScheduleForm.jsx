@@ -4,16 +4,17 @@ import "./ScheduleForm.css";
 export default function ScheduleForm({ 
   initialDate, 
   onClose, 
-  onSubmit 
+  onSubmit,
+  schedule 
 }) {
-  const [title, setTitle] = useState("");
-  const [startDate, setStartDate] = useState(initialDate);
-  const [startTime, setStartTime] = useState("09:00");
-  const [endDate, setEndDate] = useState(initialDate);
-  const [endTime, setEndTime] = useState("18:00");
-  const [place, setPlace] = useState("");
-  const [color, setColor] = useState("#545cf5");
-  const [description, setDescription] = useState("");
+  const [title, setTitle] = useState(schedule?.title || "");
+  const [startDate, setStartDate] = useState(schedule?.startDate || initialDate);
+  const [startTime, setStartTime] = useState(schedule?.startTime || "09:00");
+  const [endDate, setEndDate] = useState(schedule?.endDate || initialDate);
+  const [endTime, setEndTime] = useState(schedule?.endTime || "18:00");
+  const [place, setPlace] = useState(schedule?.place || "");
+  const [color, setColor] = useState(schedule?.color || "#545cf5");
+  const [description, setDescription] = useState(schedule?.description || "");
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -25,6 +26,7 @@ export default function ScheduleForm({
     const startDateTime = `${startDate}T${startTime}`;
     const endDateTime = `${endDate}T${endTime}`;
     onSubmit({
+      ...schedule,
       title,
       startDate,
       startTime,
@@ -40,36 +42,30 @@ export default function ScheduleForm({
   };
 
   return (
-    <div 
-        className="modal-overlay"
-        onClick={onClose}
-    >
-      <div
-        className="schedule-form-modal"
-        onClick={e => e.stopPropagation()}
-      >
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="schedule-form-modal" onClick={e => e.stopPropagation()}>
         <button className="close-btn" onClick={onClose}>×</button>
         <form onSubmit={handleSubmit}>
           <label>제목</label>
           <input value={title} onChange={e => setTitle(e.target.value)} required />
 
-          <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-            <div style={{ flex: 1 }}>
+          <div className="schedule-row">
+            <div className="schedule-col">
               <label>시작일자</label>
               <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} required />
             </div>
-            <div style={{ flex: 1 }}>
+            <div className="schedule-col">
               <label>시작시간</label>
               <input type="time" value={startTime} onChange={e => setStartTime(e.target.value)} required />
             </div>
           </div>
 
-          <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-            <div style={{ flex: 1 }}>
+          <div className="schedule-row">
+            <div className="schedule-col">
               <label>종료일자</label>
               <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} required />
             </div>
-            <div style={{ flex: 1 }}>
+            <div className="schedule-col">
               <label>종료시간</label>
               <input type="time" value={endTime} onChange={e => setEndTime(e.target.value)} required />
             </div>
@@ -84,7 +80,14 @@ export default function ScheduleForm({
           <label>설명</label>
           <textarea value={description} onChange={e => setDescription(e.target.value)} />
 
-          <button type="submit" className="submit-btn">저장</button>
+          <div className="button-group">
+            <button 
+              type="submit" 
+              className="submit-btn"
+            >
+              {schedule ? "확인" : "저장"}
+            </button>
+          </div>
         </form>
       </div>
     </div>

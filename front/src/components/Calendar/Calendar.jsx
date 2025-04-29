@@ -29,6 +29,7 @@ const Calendar = ({ onDateSelect }) => {
   const currentMonth = currentDate.getMonth();
 
   const [selectedSchedule, setSelectedSchedule] = useState(null);
+  const [editingSchedule, setEditingSchedule] = useState(null);
 
   const formattedDate = (date) => {
     const format = (n) => (n < 10 ? `0${n}` : `${n}`);
@@ -80,10 +81,22 @@ const Calendar = ({ onDateSelect }) => {
     onDateSelect?.(dateStr);
   };
 
-  const handleFormSubmit = (schedule) => {
-    setSchedules([...schedules, schedule]);
+
+  const handleEdit = (scheduleToEdit) => {
+    setSelectedSchedule(null); 
+    setEditingSchedule(scheduleToEdit);
+    setShowForm(true); 
   };
-  
+
+  const handleFormSubmit = (updatedSchedule) => {
+    if (updatedSchedule.id) {
+      setSchedules(schedules.map(s => 
+        s.id === updatedSchedule.id ? updatedSchedule : s
+      ));
+    } else {
+      setSchedules([...schedules, { ...updatedSchedule, id: Date.now() }]);
+    }
+  };
 
   return (
     <div className="calendar-container" style={{ '--calendar-width': `${DEFAULT_SIZE}px` }}>
@@ -133,7 +146,7 @@ const Calendar = ({ onDateSelect }) => {
                     }}
                     title={s.title}
                     onClick={(e) => {
-                      e.stopPropagation(); // 중요: 날짜 클릭 이벤트 방지
+                      e.stopPropagation();
                       setSelectedSchedule(s);
                     }}
                   >
@@ -151,6 +164,7 @@ const Calendar = ({ onDateSelect }) => {
           initialDate={selectedDate}
           onClose={() => setShowForm(false)}
           onSubmit={handleFormSubmit}
+          schedule={editingSchedule}
         />
       )}
 
@@ -159,6 +173,7 @@ const Calendar = ({ onDateSelect }) => {
         <ScheduleDetailModal
           schedule={selectedSchedule}
           onClose={() => setSelectedSchedule(null)}
+          onEdit={handleEdit}
         />
       )}
     </div>
