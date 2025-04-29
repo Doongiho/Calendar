@@ -1,7 +1,7 @@
 import React from "react";
 import "./ScheduleDetailModal.css";
 
-const ScheduleDetailModal = ({ schedule, onClose, onEdit }) => {
+const ScheduleDetailModal = ({ schedule, onClose, onEdit, onDelete }) => {
   if (!schedule) return null;
   return (
     <div className="modal-overlay" onClick={onClose}>
@@ -25,8 +25,14 @@ const ScheduleDetailModal = ({ schedule, onClose, onEdit }) => {
           >
             수정하기
           </button>
-                  <button
-            className="edit-btn"
+          <button
+            className="delete-btn"
+            onClick={e => {
+              e.stopPropagation();
+              if (window.confirm("정말 삭제하시겠습니까?")) {
+                onDelete && onDelete(schedule);
+              }
+            }}
           >
             삭제하기
           </button>

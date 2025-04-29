@@ -88,13 +88,21 @@ const Calendar = ({ onDateSelect }) => {
     setShowForm(true); 
   };
 
-  const handleFormSubmit = (updatedSchedule) => {
-    if (updatedSchedule.id) {
-      setSchedules(schedules.map(s => 
-        s.id === updatedSchedule.id ? updatedSchedule : s
-      ));
+  const handleDelete = (scheduleToDelete) => {
+    setSchedules(schedules.filter(s => s.id !== scheduleToDelete.id));
+    setSelectedSchedule(null);
+  };
+
+  const handleFormSubmit = (schedule) => {
+    if (schedule.id) {
+      setSchedules(prevSchedules =>
+        prevSchedules.map(s => s.id === schedule.id ? schedule : s)
+      );
     } else {
-      setSchedules([...schedules, { ...updatedSchedule, id: Date.now() }]);
+      setSchedules(prevSchedules => [
+        ...prevSchedules,
+        { ...schedule, id: Date.now() } 
+      ]);
     }
   };
 
@@ -174,6 +182,7 @@ const Calendar = ({ onDateSelect }) => {
           schedule={selectedSchedule}
           onClose={() => setSelectedSchedule(null)}
           onEdit={handleEdit}
+          onDelete={handleDelete}
         />
       )}
     </div>
