@@ -11,6 +11,7 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @Builder
 public class ScheduleRequestDto {
+    private Long userId;
     private String title;
     private String description;
     private LocalDate startDate;

@@ -20,7 +20,7 @@ public class ScheduleController implements ScheduleMapper {
     private ScheduleService scheduleService;
 
     // 스케줄 생성
-    @PostMapping
+    @PostMapping({ "", "/" })
     public ResponseEntity<ScheduleDto> createSchedule(@RequestBody ScheduleDto scheduleDto) {
         Schedule schedule = dtoToEntity(scheduleDto);
         Schedule createdSchedule = scheduleService.createSchedule(schedule);
