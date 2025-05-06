@@ -20,13 +20,18 @@ export default function Header() {
     navigate('/edit-profile');
   };
 
-  const handleWithdraw = () => {
+  const handleWithdraw = async () => {
     if (window.confirm('정말 탈퇴하시겠습니까?')) {
-      // TODO: 탈퇴 API 요청 처리
-      alert('회원 탈퇴가 처리되었습니다.');
-      localStorage.removeItem('user');
-      setUser(null);
-      navigate('/');
+      try {
+        await deleteUser(user.userId); // 서버에 삭제 요청
+        alert('회원 탈퇴가 완료되었습니다.');
+        localStorage.removeItem('user');
+        setUser(null);
+        navigate('/');
+      } catch (error) {
+        console.error('회원 탈퇴 실패:', error);
+        alert('회원 탈퇴 중 문제가 발생했습니다.');
+      }
     }
   };
 
