@@ -144,7 +144,7 @@ export default function SignUpPage() {
               </form>
 
               <div className="login-footer">
-                <Link to="/login" className="signup-link">
+                <Link to="/" className="signup-link">
                   로그인으로 돌아가기
                 </Link>
               </div>

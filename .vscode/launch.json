@@ -9,6 +9,16 @@
       "projectName": "back",
       "args": "",
       "envFile": "${workspaceFolder}/.env"
+    },
+    {
+      "type": "java",
+      "name": "Spring Boot-CalendarApplication<calendar-back>",
+      "request": "launch",
+      "cwd": "${workspaceFolder}",
+      "mainClass": "highFive.calendar.CalendarApplication",
+      "projectName": "calendar-back",
+      "args": "",
+      "envFile": "${workspaceFolder}/.env"
     }
   ]
 }

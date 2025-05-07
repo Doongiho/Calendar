@@ -1,16 +1,29 @@
-import React, { useState } from "react";
-import "./LoginPage.css";
-import { Link, useNavigate } from "react-router-dom";
-import { loginUser } from "api/userApi"; 
-import InputField from "components/InputField/InputField"; 
-import { useUser } from "../../contexts/UserContext";
+import React, { useState, useEffect } from 'react';
+import './LoginPage.css';
+import { Link, useNavigate } from 'react-router-dom';
+import { loginUser } from 'api/userApi';
+import InputField from 'components/InputField/InputField';
+import { useUser } from '../../contexts/UserContext';
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [autoLogin, setAutoLogin] = useState(false); // 🔹 자동 로그인 체크 상태
   const { setUser } = useUser();
   const navigate = useNavigate();
-  
+
+  // 🔹 앱이 열릴 때 자동 로그인 여부 확인
+  useEffect(() => {
+    const storedUser = localStorage.getItem('user');
+
+    if (storedUser) {
+      const parsedUser = JSON.parse(storedUser);
+      setUser(parsedUser);
+      const userId = parsedUser.userId;
+      navigate(`/MyCalendar/${userId}`, { state: { user: parsedUser } });
+    }
+  }, []);
+
   const isValidInput = () => {
     const emailRegex = /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/;
     return emailRegex.test(email) && password;
@@ -20,24 +33,29 @@ export default function LoginPage() {
     e.preventDefault();
 
     if (!email || !password) {
-      alert("이메일과 비밀번호를 모두 입력해주세요.");
+      alert('이메일과 비밀번호를 모두 입력해주세요.');
       return;
     }
 
     try {
-      // 로그인 요청
       const loginResponse = await loginUser(email, password);
       setUser(loginResponse.data);
-      console.log("로그인 응답:", loginResponse);
+      console.log('로그인 응답:', loginResponse);
 
-      const userId = loginResponse.data?.userId; 
-      if (!userId) throw new Error("사용자 ID를 찾을 수 없습니다.");
+      const userId = loginResponse.data?.userId;
+      if (!userId) throw new Error('사용자 ID를 찾을 수 없습니다.');
 
-      navigate(`/MyCalendar/${userId}`, { state: { user: loginResponse.data } });
+      // 🔹 자동 로그인 체크 시 localStorage 저장
+      if (autoLogin) {
+        localStorage.setItem('user', JSON.stringify(loginResponse.data));
+      }
 
+      navigate(`/MyCalendar/${userId}`, {
+        state: { user: loginResponse.data },
+      });
     } catch (error) {
-      alert("로그인 실패. 이메일 또는 비밀번호를 확인하세요.");
-      console.error("로그인 오류:", error);
+      alert('로그인 실패. 이메일 또는 비밀번호를 확인하세요.');
+      console.error('로그인 오류:', error);
     }
   };
 
@@ -88,8 +106,8 @@ export default function LoginPage() {
                   type="submit"
                   className="login-button"
                   style={{
-                    backgroundColor: isValidInput() ? "#545cf5" : "#dcdcdc",
-                    cursor: isValidInput() ? "pointer" : "not-allowed",
+                    backgroundColor: isValidInput() ? '#545cf5' : '#dcdcdc',
+                    cursor: isValidInput() ? 'pointer' : 'not-allowed',
                   }}
                 >
                   로그인
@@ -99,7 +117,11 @@ export default function LoginPage() {
               {/* 하단 링크 */}
               <div className="login-footer">
                 <label className="checkbox">
-                  <input type="checkbox" />
+                  <input
+                    type="checkbox"
+                    checked={autoLogin}
+                    onChange={(e) => setAutoLogin(e.target.checked)}
+                  />
                   <span>자동 로그인</span>
                 </label>
                 <Link to="/signup" className="signup-link">
