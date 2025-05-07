@@ -77,11 +77,12 @@
 }
 
 .todo-container {
-    flex: 5; 
+    flex: 5 1;
     display: flex;
     flex-direction: column;
-    width: 90%; 
+    width: 90%;
     text-align: center;
+    overflow-y: overlay;
 }
 
 .calendar-grid > .day{

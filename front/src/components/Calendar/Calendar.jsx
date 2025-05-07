@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import './Calendar.css'; 
-
+import ScheduleForm from "../ScheduleForm/ScheduleForm"
+import ScheduleDetailModal  from "../ScheduleDetailModal/ScheduleDetailModal"
 const Calendar = ({ onDateSelect }) => {
   const DEFAULT_SIZE =  window.innerWidth; 
   const monthNames = [
@@ -19,9 +20,16 @@ const Calendar = ({ onDateSelect }) => {
   ];
   const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
+  const [schedules, setSchedules] = useState([]);
+  const [showForm, setShowForm] = useState(false);
+  const [selectedDate, setSelectedDate] = useState("");
+
   const [currentDate, setCurrentDate] = useState(new Date());
   const currentYear = currentDate.getFullYear();
   const currentMonth = currentDate.getMonth();
+
+  const [selectedSchedule, setSelectedSchedule] = useState(null);
+  const [editingSchedule, setEditingSchedule] = useState(null);
 
   const formattedDate = (date) => {
     const format = (n) => (n < 10 ? `0${n}` : `${n}`);
@@ -67,7 +75,35 @@ const Calendar = ({ onDateSelect }) => {
   };
 
   const handleDateClick = (date) => {
-    onDateSelect?.(formattedDate(date)); 
+    const dateStr = formattedDate(date);
+    setSelectedDate(dateStr);
+    setShowForm(true);
+    onDateSelect?.(dateStr);
+  };
+
+
+  const handleEdit = (scheduleToEdit) => {
+    setSelectedSchedule(null); 
+    setEditingSchedule(scheduleToEdit);
+    setShowForm(true); 
+  };
+
+  const handleDelete = (scheduleToDelete) => {
+    setSchedules(schedules.filter(s => s.id !== scheduleToDelete.id));
+    setSelectedSchedule(null);
+  };
+
+  const handleFormSubmit = (schedule) => {
+    if (schedule.id) {
+      setSchedules(prevSchedules =>
+        prevSchedules.map(s => s.id === schedule.id ? schedule : s)
+      );
+    } else {
+      setSchedules(prevSchedules => [
+        ...prevSchedules,
+        { ...schedule, id: Date.now() } 
+      ]);
+    }
   };
 
   return (
@@ -80,35 +116,75 @@ const Calendar = ({ onDateSelect }) => {
         </div>
         <i className="next bx bx-caret-right" onClick={() => handleNavigationClick(1)}></i>
       </div>
-      <div className="calendar-grid">
+  
+     <div className="calendar-grid">
         {dayNames.map((dayName) => (
-          <div key={dayName} className="day">
-            {dayName}
-          </div>
+          <div key={dayName} className="day">{dayName}</div>
         ))}
         {eachCalendarDates().map((date) => (
-        <div
+          <div
             key={formattedDate(date)}
             data-date={formattedDate(date)}
-            className={`day-box`}
+            className="day-box"
             onClick={() => handleDateClick(date)}
-        >
-            <div 
-                className={`${classNames(date)} date-text`}
-            > 
-                {date.getDate()}
+          >
+            <div className={`${classNames(date)} date-text`}>
+              {date.getDate()}
             </div>
             <div className="todo-container">
-                {/* <div className="todo-list" data-date={formattedDate(date)}>
-                    sss
-                </div>
-                    <div className="todo-list" data-date={formattedDate(date)}>
-                    sss
-                </div> */}
+              {schedules
+                .filter(s => 
+                  s.startDate <= formattedDate(date) && 
+                  s.endDate >= formattedDate(date)
+                )
+                .map((s, idx) => (
+                  <div
+                    key={idx}
+                    className="todo-list"
+                    style={{ 
+                      background: s.color, 
+                      color: "#fff",
+                      padding: "2px 4px",
+                      borderRadius: "4px",
+                      margin: "2px 0",
+                      fontSize: "0.8em",
+                      whiteSpace: "nowrap",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis"
+                    }}
+                    title={s.title}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedSchedule(s);
+                    }}
+                  >
+                    {s.title}
+                  </div>
+                ))}
             </div>
-        </div>
+          </div>
         ))}
       </div>
+
+      {/* 일정 추가 폼 모달 */}
+      {showForm && (
+        <ScheduleForm
+          initialDate={selectedDate}
+          onClose={() => setShowForm(false)}
+          onSubmit={handleFormSubmit}
+          schedule={editingSchedule}
+        />
+      )}
+
+      {/* 일정 상세 모달 */} 
+      {selectedSchedule && (
+        <ScheduleDetailModal
+          schedule={selectedSchedule}
+          onClose={() => setSelectedSchedule(null)}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+        />
+      )}
     </div>
   );
 };
