@@ -4,7 +4,7 @@ import highFive.calendar.entity.User;
 
 public interface UserMapper {
 
-    //  DTO 를 Entity 로 변환
+    //  DTO -> Entity
     default User dtoToEntity(UserDto userDto) {
         return User.builder()
                 .userId(userDto.getUserId())
@@ -15,7 +15,7 @@ public interface UserMapper {
                 .build();
     }
 
-    //  Entity 를 DTO 로 변환
+    //  Entity -> DTO
     default UserDto entityToDto(User user) {
         return UserDto.builder()
                 .userId(user.getUserId())

@@ -1,0 +1,25 @@
+.edit-profile-container, .profile-edit-form {
+    padding: 20px;
+    max-width: 600px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .edit-button {
+    margin-top: 20px;
+    padding: 10px 20px;
+    background-color: #545cf5;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  
+  .button-group {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+  }
+  
