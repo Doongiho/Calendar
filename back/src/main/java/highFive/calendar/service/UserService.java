@@ -1,10 +1,10 @@
 package highFive.calendar.service;
 
-import highFive.calendar.dto.UserDto;
 import highFive.calendar.entity.User;
 import highFive.calendar.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
@@ -15,6 +15,7 @@ public class UserService {
     private UserRepository userRepository;
 
     //  회원가입
+    @Transactional
     public User register(User user) {
         if(userRepository.findByEmail(user.getEmail()).isPresent()) {
             throw new IllegalArgumentException("이미 등록된 이메일입니다.");
@@ -31,13 +32,26 @@ public class UserService {
         return  Optional.empty();
     }
 
+    //  프로필 조회
+    public Optional<User> findById(Long userId) { return userRepository.findById(userId);
+    }
+
     //  회원정보 수정
+    @Transactional
     public User updateUser(User user) {
+        if(!userRepository.existsById(user.getUserId())) {
+            throw new IllegalArgumentException("User not found");
+        }
         return userRepository.save(user);
     }
 
     //  회원탈퇴
+    @Transactional
     public void deleteUser(Long userId) {
         userRepository.deleteById(userId);
     }
+
+
+
+
 }
