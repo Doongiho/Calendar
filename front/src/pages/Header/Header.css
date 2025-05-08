@@ -6,6 +6,7 @@ header {
   width: 90%;
   padding-top: 20px;
   margin: auto;
+  position: relative;
 }
 .mo-header {
   justify-content: space-between;
@@ -20,7 +21,7 @@ header {
 .submenu {
   display: flex;
   justify-content: space-between;
-  width: 10%;
+  width: 12%;
 }
 .alarm {
   cursor: pointer;
@@ -35,15 +36,18 @@ header {
 }
 
 .submenu span {
-  font-size: 2.5rem;
+  font-size: 3rem;
 }
 
 .mypage span {
-  font-size: 2.5rem;
+  font-size: 3rem;
 }
 
 .room span {
-  font-size: 2.5rem;
+  font-size: 3rem;
+}
+
+.mypage-box{
 }
 
 @media (max-width: 767px) {
