@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import './Header.css';
 import { useUser } from '../../contexts/UserContext';
 import { useNavigate } from 'react-router-dom';
+import { deleteUser} from "../../api/userApi"
 
 export default function Header() {
   const { user, setUser } = useUser();
