@@ -26,10 +26,6 @@ const ScheduleDetailModal = ({ schedule, onClose, onEdit, onDelete }) => {
           {schedule.endDate} {schedule.endTime}
         </p>
         <p className="schedule-row">
-          <b>장소:</b>{" "}
-          {schedule.place || <span className="schedule-empty">없음</span>}
-        </p>
-        <p className="schedule-row">
           <b>설명:</b>{" "}
           {schedule.description || <span className="schedule-empty">없음</span>}
         </p>

@@ -98,10 +98,6 @@ export default function ScheduleForm({
               />
             </div>
           </div>
-
-          <label>장소</label>
-          <input value={place} onChange={(e) => setPlace(e.target.value)} />
-
           <label>일정 색상</label>
           <select
             value={color}

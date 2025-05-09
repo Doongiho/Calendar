@@ -128,37 +128,46 @@ const Calendar = ({ onDateSelect, userId }) => {
   };
 
   const handleFormSubmit = (schedule) => {
-    const localId = Date.now();
+    const id = schedule.scheduleId || schedule.id;
 
-    const newSchedule = {
-      ...schedule,
-      id: localId,
-      userId: Number(userId),
-    };
-
-    setSchedules((prev) => [...prev, newSchedule]);
-
-    createSchedule({
+    const payload = {
       title: schedule.title,
       description: schedule.description,
       startDate: schedule.startDate,
       endDate: schedule.endDate,
       color: schedule.color,
       userId: Number(userId),
-    })
-      .then((res) => {
-        const serverSchedule = {
-          ...res.data,
-          id: res.data.scheduleId,
-        };
+    };
 
-        setSchedules((prev) =>
-          prev.map((s) => (s.id === localId ? serverSchedule : s))
-        );
-      })
-      .catch((err) => {
-        console.error("일정 추가 실패 (서버):", err);
-      });
+    if (id) {
+      // ✅ 수정
+      updateSchedule(id, payload)
+        .then((res) => {
+          const updated = {
+            ...res.data,
+            id: res.data.scheduleId,
+          };
+          setSchedules((prev) =>
+            prev.map((s) => ((s.id || s.scheduleId) === id ? updated : s))
+          );
+        })
+        .catch((err) => {
+          console.error("일정 수정 실패:", err);
+        });
+    } else {
+      // 신규 등록
+      createSchedule({ ...payload })
+        .then((res) => {
+          const created = {
+            ...res.data,
+            id: res.data.scheduleId,
+          };
+          setSchedules((prev) => [...prev, created]);
+        })
+        .catch((err) => {
+          console.error("일정 추가 실패:", err);
+        });
+    }
 
     setShowForm(false);
     setEditingSchedule(null);
