@@ -107,8 +107,24 @@ const Calendar = ({ onDateSelect, userId }) => {
   };
 
   const handleDelete = (scheduleToDelete) => {
-    setSchedules(schedules.filter((s) => s.id !== scheduleToDelete.id));
-    setSelectedSchedule(null);
+    const id = scheduleToDelete.scheduleId || scheduleToDelete.id;
+
+    if (!id) {
+      alert("삭제할 일정 ID가 없습니다.");
+      return;
+    }
+
+    deleteSchedule(id)
+      .then(() => {
+        setSchedules((prev) =>
+          prev.filter((s) => (s.scheduleId || s.id) !== id)
+        );
+        setSelectedSchedule(null);
+      })
+      .catch((err) => {
+        console.error("일정 삭제 실패:", err);
+        alert("일정 삭제 중 오류가 발생했습니다.");
+      });
   };
 
   const handleFormSubmit = (schedule) => {
