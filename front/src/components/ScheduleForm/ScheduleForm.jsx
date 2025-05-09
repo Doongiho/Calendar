@@ -15,7 +15,7 @@ export default function ScheduleForm({
   const [endDate, setEndDate] = useState(schedule?.endDate || initialDate);
   const [endTime, setEndTime] = useState(schedule?.endTime || "18:00");
   const [place, setPlace] = useState(schedule?.place || "");
-  const [color, setColor] = useState(schedule?.color || "#545cf5");
+  const [color, setColor] = useState(schedule?.color || "BLUE");
   const [description, setDescription] = useState(schedule?.description || "");
 
   const handleSubmit = (e) => {
@@ -103,11 +103,17 @@ export default function ScheduleForm({
           <input value={place} onChange={(e) => setPlace(e.target.value)} />
 
           <label>일정 색상</label>
-          <input
-            type="color"
+          <select
             value={color}
             onChange={(e) => setColor(e.target.value)}
-          />
+            required
+          >
+            <option value="RED">빨강</option>
+            <option value="BLUE">파랑</option>
+            <option value="GREEN">초록</option>
+            <option value="YELLOW">노랑</option>
+            <option value="PURPLE">보라</option>
+          </select>
 
           <label>설명</label>
           <textarea

@@ -1,6 +1,14 @@
 import React from "react";
 import "./ScheduleDetailModal.css";
 
+const colorMap = {
+  RED: "#f44336",
+  BLUE: "#2196f3",
+  GREEN: "#4caf50",
+  YELLOW: "#ffeb3b",
+  PURPLE: "#9c27b0",
+};
+
 const ScheduleDetailModal = ({ schedule, onClose, onEdit, onDelete }) => {
   if (!schedule) return null;
   return (
@@ -29,7 +37,12 @@ const ScheduleDetailModal = ({ schedule, onClose, onEdit, onDelete }) => {
           <b>색상:</b>
           <span
             className="schedule-color-badge"
-            style={{ background: schedule.color }}
+            style={{
+              background: colorMap[schedule.color] || "#ccc",
+              color: "#fff",
+              padding: "4px 8px",
+              borderRadius: "4px",
+            }}
           >
             {schedule.color}
           </span>

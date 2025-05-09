@@ -42,13 +42,7 @@ const Calendar = ({ onDateSelect, userId }) => {
     if (userId) {
       fetchUserSchedules(userId)
         .then((res) => {
-          console.log("불러온 일정 목록:", res.data);
-          const formatted = res.data.map((s) => ({
-            ...s,
-            startDate: s.startDateTime?.split("T")[0],
-            endDate: s.endDateTime?.split("T")[0],
-          }));
-          setSchedules(formatted);
+          setSchedules(res.data);
         })
         .catch((err) => console.error("일정 불러오기 실패:", err));
     }
@@ -118,16 +112,40 @@ const Calendar = ({ onDateSelect, userId }) => {
   };
 
   const handleFormSubmit = (schedule) => {
-    if (schedule.id) {
-      setSchedules((prevSchedules) =>
-        prevSchedules.map((s) => (s.id === schedule.id ? schedule : s))
-      );
-    } else {
-      setSchedules((prevSchedules) => [
-        ...prevSchedules,
-        { ...schedule, id: Date.now() },
-      ]);
-    }
+    const localId = Date.now();
+
+    const newSchedule = {
+      ...schedule,
+      id: localId,
+      userId: Number(userId),
+    };
+
+    setSchedules((prev) => [...prev, newSchedule]);
+
+    createSchedule({
+      title: schedule.title,
+      description: schedule.description,
+      startDate: schedule.startDate,
+      endDate: schedule.endDate,
+      color: schedule.color,
+      userId: Number(userId),
+    })
+      .then((res) => {
+        const serverSchedule = {
+          ...res.data,
+          id: res.data.scheduleId,
+        };
+
+        setSchedules((prev) =>
+          prev.map((s) => (s.id === localId ? serverSchedule : s))
+        );
+      })
+      .catch((err) => {
+        console.error("일정 추가 실패 (서버):", err);
+      });
+
+    setShowForm(false);
+    setEditingSchedule(null);
   };
 
   return (
