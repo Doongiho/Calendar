@@ -1,9 +1,5 @@
 package highFive.calendar.enums;
 
 public enum ScheduleColor {
-    RED,
-    BLUE,
-    GREEN,
-    YELLOW,
-    PURPLE
+    RED, ORANGE, YELLOW, GREEN, BLUE, INDIGO, PURPLE
 }

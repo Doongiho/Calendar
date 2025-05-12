@@ -5,6 +5,7 @@ import highFive.calendar.entity.Team;
 import highFive.calendar.entity.TeamSchedule;
 import highFive.calendar.entity.User;
 import highFive.calendar.repository.*;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

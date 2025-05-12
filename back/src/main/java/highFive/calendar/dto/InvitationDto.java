@@ -17,6 +17,7 @@ public class InvitationDto {
 
     private Long invitationId;
     private Long teamId;
+    private String teamName;
     private Long inviterId;
     private String inviterName;
     private String inviterEmail;

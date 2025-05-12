@@ -7,6 +7,7 @@ import highFive.calendar.service.ScheduleService;
 import highFive.calendar.dto.ScheduleMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -21,6 +22,7 @@ public class ScheduleController implements ScheduleMapper {
 
     // 스케줄 생성
     @PostMapping({ "", "/" })
+    @PreAuthorize("principal.userId == #scheduleDto.userId")    //  본인 확인
     public ResponseEntity<ScheduleDto> createSchedule(@RequestBody ScheduleDto scheduleDto) {
         Schedule schedule = dtoToEntity(scheduleDto);
         Schedule createdSchedule = scheduleService.createSchedule(schedule);
@@ -46,6 +48,7 @@ public class ScheduleController implements ScheduleMapper {
 
     // 스케줄 수정
     @PutMapping("/{scheduleId}")
+    @PreAuthorize("@scheduleService.isOwner(#scheduleId, principal.userId)")
     public ResponseEntity<ScheduleDto> updateSchedule(@PathVariable("scheduleId") Long scheduleId, @RequestBody ScheduleDto scheduleDto) { // 🔧 수정: 변수명 명시
         Schedule schedule = dtoToEntity(scheduleDto);
         schedule.setScheduleId(scheduleId);
@@ -55,6 +58,7 @@ public class ScheduleController implements ScheduleMapper {
 
     // 스케줄 삭제
     @DeleteMapping("/{scheduleId}")
+    @PreAuthorize("@scheduleService.isOwner(#scheduleId, principal.userId)")
     public ResponseEntity<Void> deleteSchedule(@PathVariable("scheduleId") Long scheduleId) { // 🔧 수정: 변수명 명시
         scheduleService.deleteSchedule(scheduleId);
         return ResponseEntity.ok().build();

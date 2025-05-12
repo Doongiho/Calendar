@@ -1,6 +1,7 @@
 package highFive.calendar.service;
 
 
+import highFive.calendar.config.CustomUserDetails;
 import highFive.calendar.entity.Invitation;
 import highFive.calendar.entity.Team;
 import highFive.calendar.entity.TeamMember;
@@ -10,7 +11,9 @@ import highFive.calendar.repository.InvitationRepository;
 import highFive.calendar.repository.TeamMemberRepository;
 import highFive.calendar.repository.TeamRepository;
 import highFive.calendar.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -164,12 +167,17 @@ public class TeamMemberService {
 
     //  팀원 삭제 2. 팀 생성자가 팀원 강퇴
     @Transactional
-    public void kickTeamMember(Long teamId, Long targetUserId, Long leaderId) {
+    public void kickTeamMember(Long teamId, Long targetUserId) {
+
+        CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        Long currentUserId = userDetails.getUserId();
+
         Team team = teamRepository.findById(teamId)
                 .orElseThrow(() -> new IllegalArgumentException("Team not found"));
 
-        //  leaderId 인지 확인
-        if(!team.getUser().getUserId().equals(leaderId)) {
+        // 팀 생성자 확인
+        if (!team.getUser().getUserId().equals(currentUserId)) {
             throw new IllegalArgumentException("팀 생성자만 강제 퇴장시킬 수 있습니다.");
         }
 
@@ -180,5 +188,17 @@ public class TeamMemberService {
                 .orElseThrow(() -> new IllegalArgumentException("팀에 속하지 않습니다."));
 
         teamMemberRepository.delete(teamMember);
+    }
+
+    //  Spring Security
+    public boolean isTeamMember(Long teamId, Long userId) {
+        return teamMemberRepository.existsByTeam_TeamIdAndUser_UserId(teamId, userId);
+    }
+
+    public boolean isInvitedUser(Long invitationId, Long userId) {
+        Invitation invitation = invitationRepository.findById(invitationId)
+                .orElseThrow(() -> new IllegalArgumentException("Invitation not found"));
+
+        return invitation.getInvitedUser().getUserId().equals(userId);
     }
 }

@@ -11,6 +11,7 @@ public interface InvitationMapper {
         return InvitationDto.builder()
                 .invitationId(invitation.getInvitationsId())
                 .teamId(invitation.getTeam().getTeamId())
+                .teamName(invitation.getTeam().getTeamName())
                 .inviterId(invitation.getInviter().getUserId())
                 .inviterName(invitation.getInviter().getName())
                 .inviterEmail(invitation.getInviter().getEmail())
