@@ -7,6 +7,7 @@ import highFive.calendar.entity.User;
 import highFive.calendar.repository.TeamMemberRepository;
 import highFive.calendar.repository.TeamRepository;
 import highFive.calendar.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -79,5 +80,13 @@ public class TeamService {
         teamMemberRepository.deleteAll(teamMemberRepository.findByTeam(team));
 
         teamRepository.deleteById(teamId);
+    }
+
+    //  Spring Security
+    public boolean isTeamCreator(Long teamId, Long userId) {
+        Team team = teamRepository.findById(teamId)
+                .orElseThrow(() -> new IllegalArgumentException("Team not found"));
+
+        return team.getUser().getUserId().equals(userId);
     }
 }

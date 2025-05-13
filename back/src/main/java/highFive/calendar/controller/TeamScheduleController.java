@@ -10,6 +10,7 @@ import highFive.calendar.repository.UserRepository;
 import highFive.calendar.service.TeamScheduleService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,7 +19,7 @@ import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/api/team-schedules")
-public class TeamScheduleController implements TeamScheduleMapper {
+public class TeamScheduleController implements TeamScheduleMapper{
 
     @Autowired
     private TeamScheduleService teamScheduleService;
@@ -27,6 +28,7 @@ public class TeamScheduleController implements TeamScheduleMapper {
 
     //  팀 스케줄 생성
     @PostMapping("")
+    @PreAuthorize("@teamMemberService.isTeamMember(#teamScheduleDto.teamId, principal.userId)")
     public ResponseEntity<ApiResponse<TeamScheduleDto>> createTeamSchedule(@RequestBody TeamScheduleDto teamScheduleDto) {
         try {
             User user = userRepository.findById(teamScheduleDto.getUserId())
@@ -107,8 +109,9 @@ public class TeamScheduleController implements TeamScheduleMapper {
 
     //  팀 스케줄 수정
     @PutMapping("/{teamScheduleId}")
+    @PreAuthorize("@teamMemberService.isTeamMember(#teamScheduleDto.teamId, principal.userId)")
     public ResponseEntity<ApiResponse<TeamScheduleDto>> updateTeamSchedule(@PathVariable(name = "teamScheduleId") Long teamScheduleId,
-            @RequestBody TeamScheduleDto teamScheduleDto) {
+                                                                           @RequestBody TeamScheduleDto teamScheduleDto) {
         try {
             TeamSchedule existingSchedule = teamScheduleService.getTeamScheduleById(teamScheduleId)
                     .orElseThrow(() -> new IllegalArgumentException("Team schedule not found"));
@@ -140,7 +143,7 @@ public class TeamScheduleController implements TeamScheduleMapper {
 
     //  팀 스케줄 삭제
     @DeleteMapping("/{teamScheduleId}")
-    public ResponseEntity<ApiResponse<Void>> deleteTeamSchedule(@PathVariable(name = "teamScheduleId") Long teamScheduleId) {
+    public  ResponseEntity<ApiResponse<Void>> deleteTeamSchedule(@PathVariable(name = "teamScheduleId") Long teamScheduleId) {
         try {
             teamScheduleService.deleteTeamSchedule(teamScheduleId);
 

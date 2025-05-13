@@ -9,4 +9,5 @@ import lombok.Data;
 public class ApiResponse<T> {
     private T data;
     private String message;
+    private String token;   //  JWT 토큰 응답 필드 추가
 }

@@ -1,5 +1,6 @@
 package highFive.calendar.controller;
 
+import highFive.calendar.config.CustomUserDetails;
 import highFive.calendar.dto.*;
 import highFive.calendar.entity.Invitation;
 import highFive.calendar.entity.Team;
@@ -10,6 +11,8 @@ import highFive.calendar.service.TeamMemberService;
 import highFive.calendar.service.TeamService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -26,7 +29,6 @@ public class TeamController implements TeamMapper, TeamMemberMapper, InvitationM
     @Autowired
     private TeamMemberService teamMemberService;
 
-    //  팀 생성
     @PostMapping("")
     public ResponseEntity<ApiResponse<TeamDto>> createTeam(@RequestBody TeamDto teamDto) {
         try {
@@ -108,6 +110,7 @@ public class TeamController implements TeamMapper, TeamMemberMapper, InvitationM
 
     //  팀 정보 수정
     @PutMapping("/{teamId}")
+    @PreAuthorize("@teamService.isTeamCreator(#teamId, principal.userId)")
     public ResponseEntity<ApiResponse<TeamDto>> updateTeam(@PathVariable(name = "teamId") Long teamId,
             @RequestBody TeamDto teamDto) {
         try {
@@ -136,6 +139,7 @@ public class TeamController implements TeamMapper, TeamMemberMapper, InvitationM
 
     //  팀 삭제
     @DeleteMapping("/{teamId}")
+    @PreAuthorize("@teamService.isTeamCreator(#teamId, principal.userId)")
     public ResponseEntity<ApiResponse<Void>> deleteTeam(@PathVariable(name = "teamId") Long teamId) {
         try {
             teamService.deleteTeam(teamId);
@@ -158,11 +162,12 @@ public class TeamController implements TeamMapper, TeamMemberMapper, InvitationM
 
     //  팀원 초대
     @PostMapping("/{teamId}/invitations")
+    @PreAuthorize("@teamMemberService.isTeamMember(#teamId, principal.userId)")
     public ResponseEntity<ApiResponse<InvitationDto>> inviteUserToTeam(@PathVariable(name = "teamId") Long teamId,
-            @RequestParam(name = "inviterId") Long inviterId,
-            @RequestParam(name = "invitedUserId") Long invitedUserId) {
+            @RequestParam(name = "invitedUserId") Long invitedUserId,
+            @AuthenticationPrincipal CustomUserDetails inviter) {
         try {
-            Invitation invitation = teamMemberService.inviteUserToTeam(teamId, inviterId, invitedUserId);
+            Invitation invitation = teamMemberService.inviteUserToTeam(teamId, inviter.getUserId(), invitedUserId);
             InvitationDto invitationDto = entityToDto(invitation);
 
             ApiResponse<InvitationDto> response = ApiResponse.<InvitationDto>builder()
@@ -183,11 +188,12 @@ public class TeamController implements TeamMapper, TeamMemberMapper, InvitationM
 
     //  초대 수락
     @PutMapping("/invitations/{invitationId}/accept")
+    @PreAuthorize("@teamMemberService.isInvitedUser(#invitationId, principal.userId)")
     public ResponseEntity<ApiResponse<TeamMemberDto>> acceptTeamInvitation(
             @PathVariable(name = "invitationId") Long invitationId,
-            @RequestParam(name = "actionUserId") Long actionUserId) {
+            @AuthenticationPrincipal CustomUserDetails user) {
         try {
-            TeamMember teamMember = teamMemberService.acceptTeamInvitation(invitationId, actionUserId);
+            TeamMember teamMember = teamMemberService.acceptTeamInvitation(invitationId, user.getUserId());
             TeamMemberDto teamMemberDto = entityToDto(teamMember);
 
             ApiResponse<TeamMemberDto> response = ApiResponse.<TeamMemberDto>builder()
@@ -208,11 +214,12 @@ public class TeamController implements TeamMapper, TeamMemberMapper, InvitationM
 
     //  초대 거절
     @PutMapping("/invitations/{invitationId}/reject")
+    @PreAuthorize("@teamMemberService.isInvitedUser(#invitationId, principal.userId)")
     public ResponseEntity<ApiResponse<Void>> rejectTeamInvitation(
             @PathVariable(name = "invitationId") Long invitationId,
-            @RequestParam(name = "actionUserId") Long actionUserId) {
+            @AuthenticationPrincipal CustomUserDetails user) {
         try {
-            teamMemberService.rejectTeamInvitation(invitationId, actionUserId);
+            teamMemberService.rejectTeamInvitation(invitationId, user.getUserId());
 
             ApiResponse<Void> response = ApiResponse.<Void>builder()
                     .data(null)
@@ -255,30 +262,49 @@ public class TeamController implements TeamMapper, TeamMemberMapper, InvitationM
         }
     }
 
-    //  팀원 삭제
-    @DeleteMapping("/{teamId}/members/{userId}")
-    public ResponseEntity<ApiResponse<Void>> removeTeamMember(@PathVariable(name = "teamId") Long teamId,
-            @PathVariable(name = "userId") Long userId,
-            @RequestParam(name = "leaderId", required = false) Long leaderId) {
+    //  팀원 스스로 나가기
+    @DeleteMapping("/{teamId}/members/me")
+    @PreAuthorize("principal.userId == #userDetails.userId")
+    public ResponseEntity<ApiResponse<Void>> leaveTeam(@PathVariable(name = "teamId") Long teamId,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
         try {
-            if (leaderId != null) {
-                //  팀 생성자가 팀원 강퇴
-                teamMemberService.kickTeamMember(teamId, userId, leaderId);
-            } else {
-                //  팀원이 스스로 나가는 경우
-                teamMemberService.leaveTeam(teamId, userId);
-            }
+            teamMemberService.leaveTeam(teamId, userDetails.getUserId());
 
             ApiResponse<Void> response = ApiResponse.<Void>builder()
                     .data(null)
-                    .message("팀원 삭제 성공")
+                    .message("팀에서 나갔습니다.")
                     .build();
 
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             ApiResponse<Void> response = ApiResponse.<Void>builder()
                     .data(null)
-                    .message("팀원 삭제 실패: " + e.getMessage())
+                    .message("나가기 실패~. :" + e.getMessage())
+                    .build();
+
+            return ResponseEntity.badRequest().body(response);
+        }
+    }
+
+    //  팀 생성자가 팀원 강퇴
+    @DeleteMapping("/{teamId}/members/{userId}")
+    @PreAuthorize("@teamService.isTeamCreator(#teamId, principal.userId)")
+    public ResponseEntity<ApiResponse<Void>> kickTeamMember(@PathVariable(name = "teamId") Long teamId,
+            @PathVariable(name = "userId") Long userId) {
+
+        try {
+            teamMemberService.kickTeamMember(teamId, userId);
+
+            ApiResponse<Void> response = ApiResponse.<Void>builder()
+                    .data(null)
+                    .message("팀원이 강퇴되었습니다.")
+                    .build();
+
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            ApiResponse<Void> response = ApiResponse.<Void>builder()
+                    .data(null)
+                    .message("강퇴 실패~. :" + e.getMessage())
                     .build();
 
             return ResponseEntity.badRequest().body(response);

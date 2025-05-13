@@ -46,4 +46,11 @@ public class ScheduleService {
     public void deleteSchedule(Long scheduleId) {
         scheduleRepository.deleteById(scheduleId);
     }
+
+    //  spring security
+    public boolean isOwner(Long scheduleId, Long userId) {
+        Schedule schedule = scheduleRepository.findById(scheduleId)
+                .orElseThrow(() -> new IllegalArgumentException("스케줄을 찾을 수 없습니다."));
+        return schedule.getUser().getUserId().equals(userId);
+    }
 }
