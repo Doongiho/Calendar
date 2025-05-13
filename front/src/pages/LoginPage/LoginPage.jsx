@@ -39,27 +39,26 @@ export default function LoginPage() {
 
     try {
       const loginResponse = await loginUser(email, password);
-      const userData = loginResponse.data;
+      const userData = {
+        ...loginResponse.data,
+        token: loginResponse.token,
+      };
+
       setUser(userData);
+      localStorage.setItem("user", JSON.stringify(userData));
 
-      console.log("로그인 응답:", loginResponse);
-
-      const userId = loginResponse.data?.userId;
+      const userId = userData.userId;
       if (!userId) throw new Error("사용자 ID를 찾을 수 없습니다.");
 
-      // 🔹 자동 로그인 체크 시 localStorage 저장
-      if (autoLogin) {
-        localStorage.setItem("user", JSON.stringify(loginResponse.data));
-      }
-
       navigate(`/MyCalendar/${userId}`, {
-        state: { user: loginResponse.data },
+        state: { user: userData },
       });
     } catch (error) {
       alert("로그인 실패. 이메일 또는 비밀번호를 확인하세요.");
       console.error("로그인 오류:", error);
     }
   };
+
 
   return (
     <div className="login-container">

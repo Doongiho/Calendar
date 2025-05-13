@@ -8,4 +8,23 @@ const axiosInstance = axios.create({
   },
 });
 
+axiosInstance.interceptors.request.use(
+  (config) => {
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      try {
+        const { token } = JSON.parse(storedUser);
+        if (token) {
+          config.headers.Authorization = `Bearer ${token}`;
+        }
+      } catch (e) {
+        console.warn("토큰 파싱 오류:", e);
+      }
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
+
 export default axiosInstance;
