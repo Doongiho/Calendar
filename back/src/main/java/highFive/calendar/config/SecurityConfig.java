@@ -5,6 +5,7 @@ import highFive.calendar.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -30,6 +31,7 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())   //  REST API 는 CSRF 보호 비활성화
                 .cors(Customizer.withDefaults())    //  WebConfig 설정 사용
                 .authorizeHttpRequests(auth -> auth.requestMatchers("/","/api/users/register", "/api/users/login").permitAll()   //  인증 없이 접근 허용
+                .requestMatchers(HttpMethod.PUT, "/api/users/me").authenticated()
                 .anyRequest().authenticated()   //  그 외 모든 요청은 인증 필요
                 )
                 .addFilterBefore(   //  JWT 필터 추가

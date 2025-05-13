@@ -14,38 +14,48 @@ export default function ProfileEditForm({ setIsEditing }) {
   const [gender, setGender] = useState(user?.gender === 0 ? '남성' : '여성');
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    if (password !== confirmPassword) {
-      alert('비밀번호가 일치하지 않습니다.');
-      return;
-    }
+  if (password !== confirmPassword) {
+    alert('비밀번호가 일치하지 않습니다.');
+    return;
+  }
 
-    // 문자열 "남성" → 숫자 0, "여성" → 숫자 1
-    const genderNumber = gender === '남성' ? 0 : 1;
+  const genderNumber = gender === '남성' ? 0 : 1;
+  const originalEmail = user?.email;
 
-    const updatedUserData = {
-      userId: user.userId,
-      name,
-      email,
-      gender: genderNumber,
-      pwd: password || '', // 서버는 'pwd' 필드 필요
-    };
+  const updatedUserData = {
+    userId: user.userId,
+    name,
+    email,
+    gender: genderNumber,
+    pwd: password || '', // 서버는 pwd 필드 필요
+  };
 
-    try {
-      const updatedUser = await updateUserInfo(user.userId, updatedUserData);
+  try {
+    const updatedUser = await updateUserInfo(updatedUserData);
 
+    const emailChanged = originalEmail !== updatedUser.email;
+    const pwdChanged = password && password !== '';
+
+    if (emailChanged || pwdChanged) {
+      alert('이메일 또는 비밀번호가 변경되어 로그아웃됩니다.');
+      localStorage.removeItem('user');
+      setUser(null);
+      navigate('/');
+    } else {
       setUser(updatedUser);
       localStorage.setItem('user', JSON.stringify(updatedUser));
-
       navigate(`/MyCalendar/${updatedUser.userId}`, {
         state: { user: updatedUser },
       });
-    } catch (error) {
-      console.error('회원정보 수정 실패:', error);
-      alert('회원정보 수정에 실패했습니다. 다시 시도해주세요.');
     }
-  };
+  } catch (error) {
+    console.error('회원정보 수정 실패:', error);
+    alert('회원정보 수정에 실패했습니다. 다시 시도해주세요.');
+  }
+};
+
 
   return (
     <form className="profile-edit-form" onSubmit={handleSubmit}>

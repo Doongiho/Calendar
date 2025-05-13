@@ -1,6 +1,8 @@
 package highFive.calendar.config;
 
-import highFive.calendar.service.UserService;
+import highFive.calendar.entity.User;
+import highFive.calendar.config.CustomUserDetails;
+import highFive.calendar.repository.UserRepository;
 import highFive.calendar.util.JwtUtil;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -9,13 +11,12 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Optional;
 
 //  JWT 토큰을 검사해서 인증 정보를 SecurityContext 에 넣어주는 필터
 @Component
@@ -24,8 +25,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;  //  JWT 관련 유틸리티 클래스
 
-    private final UserDetailsService userDetailsService;
-
+    private final UserRepository userRepository; // ✅ email로 사용자 조회하기 위해 추가
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -37,7 +37,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String email = null;
 
         //  2. 헤더가 있고, "Bearer" 로 시작하면 토큰 추출
-        if (authHeader != null && authHeader.startsWith("Bearer")) {
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
             jwt = authHeader.substring(7);  //  "Bearer" 이후의 토큰 값만 추출
 
             try {
@@ -50,12 +50,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         //  3. email 이 있고, 아직 인증이 안된 경우
         if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            UserDetails userDetails = userDetailsService.loadUserByUsername(email);
+            // ✅ email로 사용자 조회
+            Optional<User> userOptional = userRepository.findByEmail(email);
 
-            //  4. 토큰이 유효한지 검사 (간단하게 email 추출만으로 인증)
-            if (userDetails != null) {
+            if (userOptional.isPresent()) {
+                // ✅ CustomUserDetails 로 wrapping
+                CustomUserDetails userDetails = new CustomUserDetails(userOptional.get());
+
+                //  4. 토큰이 유효한지 검사 (간단하게 email 추출만으로 인증)
                 //  5. 인증 객체 생성 및 SecurityContext 에 저장
-                UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                UsernamePasswordAuthenticationToken authenticationToken =
+                        new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
                 authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authenticationToken);
             }
@@ -63,6 +68,5 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         //  6. 다음 필터로 요청 전달
         filterChain.doFilter(request, response);
-
     }
 }
