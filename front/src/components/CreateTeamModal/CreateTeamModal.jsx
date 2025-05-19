@@ -45,7 +45,7 @@ export default function CreateTeamModal({ onClose, onCreate }) {
             <button type="submit" className="submit-btn">
               만들기
             </button>
-            <button type="button" onClick={onClose}>
+            <button type="button" onClick={onClose} className="close-btn">
               닫기
             </button>
           </div>

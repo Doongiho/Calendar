@@ -20,15 +20,6 @@
   position: relative;
 }
 
-.close-btn {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  background: none;
-  border: none;
-  font-size: 1.5rem;
-  cursor: pointer;
-}
 
 .schedule-form-modal label {
   display: block;
@@ -56,8 +47,7 @@
 }
 
 .submit-btn {
-  margin-top: 16px;
-  width: 100%;
+  width: 80%;
   padding: 8px 0;
   background: #545cf5;
   color: #fff;
