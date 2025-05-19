@@ -1,28 +1,59 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import './Header.css';
 import { useUser } from '../../contexts/UserContext';
 import { useNavigate } from 'react-router-dom';
-import { deleteUser} from "../../api/userApi"
+import { deleteUser } from "../../api/userApi";
+import { fetchTeamsByUser, createTeam } from "../../api/teamApi";
 import EditProfile from 'pages/EditProfile/EditProfile';
+import CreateTeamModal from 'components/CreateTeamModal/CreateTeamModal';
 
 export default function Header() {
   const { user, setUser } = useUser();
   const userName = user?.name || '사용자';
   const [menuOpen, setMenuOpen] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showCreateTeamModal, setShowCreateTeamModal] = useState(false);
+  const [teams, setTeams] = useState([]);
   const navigate = useNavigate();
 
-  // ✅ 로그아웃 처리
+  const menuRef = useRef(null);
+  const userMenuRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (menuRef.current && !menuRef.current.contains(e.target)) {
+        setMenuOpen(false);
+      }
+      if (userMenuRef.current && !userMenuRef.current.contains(e.target)) {
+        setUserMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  // ✅ 새로고침 시 자동 팀 불러오기
+  useEffect(() => {
+    if (user?.userId) {
+      fetchTeamsByUser(user.userId)
+        .then(setTeams)
+        .catch(() => setTeams([]));
+    }
+  }, [user?.userId]);
+
   const handleLogout = () => {
-    localStorage.removeItem('user'); // 자동 로그인 해제
-    setUser(null); // 전역 상태 초기화
-    navigate('/'); // 로그인 페이지로 이동
+    localStorage.removeItem('user');
+    setUser(null);
+    navigate('/');
   };
 
   const handleWithdraw = async () => {
     if (window.confirm('정말 탈퇴하시겠습니까?')) {
       try {
-        await deleteUser(user.userId); // 서버에 삭제 요청
+        await deleteUser(user.userId);
         alert('회원 탈퇴가 완료되었습니다.');
         localStorage.removeItem('user');
         setUser(null);
@@ -34,11 +65,62 @@ export default function Header() {
     }
   };
 
+  const handleMenuToggle = () => {
+    const next = !menuOpen;
+    setMenuOpen(next);
+    setUserMenuOpen(false);
+    if (next && user?.userId) {
+      fetchTeamsByUser(user.userId)
+        .then(setTeams)
+        .catch(() => setTeams([]));
+    }
+  };
+
+  const handleUserMenuToggle = () => {
+    setUserMenuOpen(!userMenuOpen);
+    setMenuOpen(false);
+  };
+
+  const handleCreateTeam = async ({ teamName, description }) => {
+    if (!user || !user.token) {
+      alert("로그인이 만료되었습니다. 다시 로그인해주세요.");
+      return;
+    }
+
+    try {
+      const newTeam = await createTeam({
+        userId: user.userId,
+        teamName,
+        description,
+      });
+
+      if (!newTeam || !newTeam.teamId) {
+        throw new Error("생성된 팀의 ID가 없습니다.");
+      }
+
+      console.log("생성된 team:", newTeam);
+
+      const updatedTeams = await fetchTeamsByUser(user.userId);
+      setTeams(updatedTeams); // ✅ 여기 수정됨
+
+      alert("팀이 생성되었습니다.");
+      setShowCreateTeamModal(false);
+    } catch (error) {
+      console.error("팀 생성 실패:", error);
+      alert("팀 생성 중 오류가 발생했습니다.");
+    }
+  };
   return (
     <>
-     {showEditModal && <EditProfile onClose={() => setShowEditModal(false)} />}
+      {showEditModal && <EditProfile onClose={() => setShowEditModal(false)} />}
+      {showCreateTeamModal && (
+        <CreateTeamModal
+          onClose={() => setShowCreateTeamModal(false)}
+          onCreate={handleCreateTeam}
+        />
+      )}
+
       <header>
-        {/* 모바일 버전 */}
         <div className="mo-header">
           <div className="mobile-title">{userName}님의 개인 일정표</div>
           <div className="mobile-submenu submenu">
@@ -48,32 +130,53 @@ export default function Header() {
           </div>
         </div>
 
-        {/* PC 버전 */}
         <div className="pc-header">
           <div className="mobile-title">{userName}님의 개인 일정표</div>
-            <div className="pc-submenu submenu">
-              <div className="alarm">
-                <span className="material-symbols-outlined">notifications</span>
+          <div className="pc-submenu submenu">
+            <div className="alarm">
+              <span className="material-symbols-outlined">notifications</span>
+            </div>
+            <div className="mypage-box">
+              <div className="mypage" onClick={handleUserMenuToggle}>
+                <span className="material-symbols-outlined">account_circle</span>
               </div>
-              <div className="mypage-box">
-                <div className="mypage"  onClick={() => setMenuOpen(!menuOpen)}>
-                  <span className="material-symbols-outlined">account_circle</span>
-                </div>
-                
-              </div>
-              <div className="room">
-                <span className="material-symbols-outlined">menu</span>
-              </div>
-          </div>  
-           {menuOpen && (
-            <div className="dropdown-menu">
-                <button onClick={() => setShowEditModal(true)}>회원정보 수정</button>
-                <button onClick={handleLogout}>로그아웃</button>
-                <button onClick={handleWithdraw}>회원탈퇴</button>
-              </div>
-            )}
+            </div>
+            <div className="room" onClick={handleMenuToggle}>
+              <span className="material-symbols-outlined">menu</span>
+            </div>
+          </div>
+
+          {userMenuOpen && (
+            <div className="dropdown-menu" ref={userMenuRef}>
+              <button onClick={() => setShowEditModal(true)}>회원정보 수정</button>
+              <button onClick={handleLogout}>로그아웃</button>
+              <button onClick={handleWithdraw}>회원탈퇴</button>
+            </div>
+          )}
+
+          {menuOpen && (
+            <div className="dropdown-menu" ref={menuRef}>
+              <div className="room-list-title">🗂 팀 캘린더 목록</div>
+              <ul className="room-list">
+                {Array.isArray(teams) && teams.length > 0 ? (
+                  teams.map((team) => (
+                    <li key={team.teamId} className="room-item" onClick={() => navigate(`/teams/${team.teamId}`)}>
+                      {team.teamName}
+                    </li>
+                  ))
+                ) : (
+                  <li className="room-item muted">팀이 없습니다</li>
+                )}
+              </ul>
+              <button
+                onClick={() => setShowCreateTeamModal(true)}
+                className="create-room-button"
+              >
+                ➕ 팀 방 만들기
+              </button>
+            </div>
+          )}
         </div>
-       
       </header>
     </>
   );
