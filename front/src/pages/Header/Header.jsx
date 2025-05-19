@@ -3,7 +3,7 @@ import './Header.css';
 import { useUser } from '../../contexts/UserContext';
 import { useNavigate } from 'react-router-dom';
 import { deleteUser } from "../../api/userApi";
-import { fetchTeamsByUser, createTeam } from "../../api/teamApi";
+import { fetchTeamsByUser, createTeam, deleteTeam } from "../../api/teamApi";
 import EditProfile from 'pages/EditProfile/EditProfile';
 import CreateTeamModal from 'components/CreateTeamModal/CreateTeamModal';
 
@@ -110,6 +110,20 @@ export default function Header() {
       alert("팀 생성 중 오류가 발생했습니다.");
     }
   };
+
+  const handleDeleteTeam = async (teamId) => {
+    if (window.confirm("정말 이 팀을 삭제하시겠습니까?")) {
+      try {
+        await deleteTeam(teamId);
+        setTeams((prev) => prev.filter((team) => team.teamId !== teamId));
+        alert("팀이 삭제되었습니다.");
+      } catch (error) {
+        console.error("팀 삭제 실패:", error);
+        alert("팀 삭제 중 문제가 발생했습니다.");
+      }
+    }
+  };
+  
   return (
     <>
       {showEditModal && <EditProfile onClose={() => setShowEditModal(false)} />}
@@ -160,8 +174,16 @@ export default function Header() {
               <ul className="room-list">
                 {Array.isArray(teams) && teams.length > 0 ? (
                   teams.map((team) => (
-                    <li key={team.teamId} className="room-item" onClick={() => navigate(`/teams/${team.teamId}`)}>
-                      {team.teamName}
+                    <li key={team.teamId} className="room-item">
+                      <span onClick={() => navigate(`/teams/${team.teamId}`)}>
+                        {team.teamName}
+                      </span>
+                      <button
+                        className="delete-btn"
+                        onClick={() => handleDeleteTeam(team.teamId)}
+                      >
+                        삭제
+                      </button>
                     </li>
                   ))
                 ) : (
