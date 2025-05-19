@@ -24,6 +24,9 @@ export default function CreateTeamModal({ onClose, onCreate }) {
   return (
     <div className="modal-backdrop">
       <div className="modal">
+        <button type="button" onClick={onClose} className="close-btn">
+                ×
+        </button>
         <h3>팀 일정표 만들기</h3>
         <form onSubmit={handleCreateTeam}>
           <label>캘린더 제목</label>
@@ -45,9 +48,7 @@ export default function CreateTeamModal({ onClose, onCreate }) {
             <button type="submit" className="submit-btn">
               만들기
             </button>
-            <button type="button" onClick={onClose} className="close-btn">
-              닫기
-            </button>
+
           </div>
         </form>
       </div>

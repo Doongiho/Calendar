@@ -3,9 +3,10 @@ import './Header.css';
 import { useUser } from '../../contexts/UserContext';
 import { useNavigate } from 'react-router-dom';
 import { deleteUser } from "../../api/userApi";
-import { fetchTeamsByUser, createTeam, deleteTeam } from "../../api/teamApi";
+import { fetchTeamsByUser, createTeam, deleteTeam, updateTeam } from "../../api/teamApi";
 import EditProfile from 'pages/EditProfile/EditProfile';
 import CreateTeamModal from 'components/CreateTeamModal/CreateTeamModal';
+import EditTeamModal  from 'components/EditTeamModal/EditTeamModal'
 
 export default function Header() {
   const { user, setUser } = useUser();
@@ -15,6 +16,9 @@ export default function Header() {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showCreateTeamModal, setShowCreateTeamModal] = useState(false);
   const [teams, setTeams] = useState([]);
+  const [selectedTeam, setSelectedTeam] = useState(null);
+const [showEditTeamModal, setShowEditTeamModal] = useState(false);
+
   const navigate = useNavigate();
 
   const menuRef = useRef(null);
@@ -123,6 +127,20 @@ export default function Header() {
       }
     }
   };
+
+  const handleUpdateTeam = async ({ teamId, teamName, description }) => {
+    try {
+      await updateTeam(teamId, { teamName, description });
+      const updatedTeams = await fetchTeamsByUser(user.userId);
+      setTeams(updatedTeams);
+      setShowEditTeamModal(false);
+      alert("팀이 수정되었습니다.");
+    } catch (error) {
+      console.error("팀 수정 실패:", error);
+      alert("팀 수정 중 오류가 발생했습니다.");
+    }
+  };
+  
   
   return (
     <>
@@ -168,6 +186,14 @@ export default function Header() {
             </div>
           )}
 
+          {showEditTeamModal && selectedTeam && (
+            <EditTeamModal
+              team={selectedTeam}
+              onClose={() => setShowEditTeamModal(false)}
+              onUpdate={handleUpdateTeam}
+            />
+          )}
+
           {menuOpen && (
             <div className="dropdown-menu" ref={menuRef}>
               <div className="room-list-title">🗂 팀 캘린더 목록</div>
@@ -178,12 +204,23 @@ export default function Header() {
                       <span onClick={() => navigate(`/teams/${team.teamId}`)}>
                         {team.teamName}
                       </span>
-                      <button
-                        className="delete-btn"
-                        onClick={() => handleDeleteTeam(team.teamId)}
-                      >
-                        삭제
-                      </button>
+                      <div className='group-btn'>
+                        <button
+                          className="edit-btn-list "
+                          onClick={() => {
+                            setSelectedTeam(team);
+                            setShowEditTeamModal(true);
+                          }}
+                        >
+                          수정
+                        </button>
+                        <button
+                          className="delete-btn-list "
+                          onClick={() => handleDeleteTeam(team.teamId)}
+                        >
+                          삭제
+                        </button>
+                      </div>
                     </li>
                   ))
                 ) : (

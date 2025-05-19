@@ -47,7 +47,30 @@ header {
   font-size: 3rem;
 }
 
-.mypage-box{
+.delete-btn-list {
+  padding: 2px 4px;
+  background: #ffcd00;
+  color: #fff;
+  border-radius: 4px;
+  cursor: pointer;
+  height: 20px;
+  margin: auto 0;
+}
+
+.edit-btn-list{
+  padding: 2px 4px;
+  background: #ffcd00;
+  color: #fff;
+  border-radius: 4px;
+  cursor: pointer;
+  height: 20px;
+  margin: auto 0;
+}
+
+.group-btn {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
 }
 
 @media (max-width: 767px) {

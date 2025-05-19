@@ -29,7 +29,7 @@ const ScheduleDetailModal = ({ schedule, onClose, onEdit, onDelete }) => {
           <b>설명:</b>{" "}
           {schedule.description || <span className="schedule-empty">없음</span>}
         </p>
-        <div className="schedule-color-row">
+        <div className="schedule-row">
           <b>색상:</b>
           <span
             className="schedule-color-badge"

@@ -8,23 +8,20 @@ const axiosInstance = axios.create({
   },
 });
 
-axiosInstance.interceptors.request.use(
-  (config) => {
+axiosInstance.interceptors.request.use((config) => {
+  const isLoginRequest = config.url.includes('/api/users/login');
+  if (!isLoginRequest) {
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
-      try {
-        const { token } = JSON.parse(storedUser);
-        if (token) {
-          config.headers.Authorization = `Bearer ${token}`;
-        }
-      } catch (e) {
-        console.warn("토큰 파싱 오류:", e);
+      const { token } = JSON.parse(storedUser);
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
       }
     }
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
+  }
+  return config;
+});
+
 
 
 export default axiosInstance;

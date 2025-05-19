@@ -24,3 +24,8 @@ export const deleteTeam = async (teamId) => {
   return await axiosInstance.delete(`/api/teams/${teamId}`);
 };
 
+export const updateTeam = async (teamId, data) => {
+  const res = await axiosInstance.put(`/api/teams/${teamId}`, data);
+  return res.data;
+};
+
