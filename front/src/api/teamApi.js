@@ -28,4 +28,3 @@ export const updateTeam = async (teamId, data) => {
   const res = await axiosInstance.put(`/api/teams/${teamId}`, data);
   return res.data;
 };
-

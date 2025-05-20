@@ -3,10 +3,13 @@ import './Header.css';
 import { useUser } from '../../contexts/UserContext';
 import { useNavigate } from 'react-router-dom';
 import { deleteUser } from "../../api/userApi";
-import { fetchTeamsByUser, createTeam, deleteTeam, updateTeam } from "../../api/teamApi";
+import { fetchTeamsByUser, createTeam, deleteTeam, updateTeam} from "../../api/teamApi";
 import EditProfile from 'pages/EditProfile/EditProfile';
 import CreateTeamModal from 'components/CreateTeamModal/CreateTeamModal';
-import EditTeamModal  from 'components/EditTeamModal/EditTeamModal'
+import EditTeamModal from 'components/EditTeamModal/EditTeamModal'
+import InviteModal from 'components/InviteModal/InviteModal';
+
+ 
 
 export default function Header() {
   const { user, setUser } = useUser();
@@ -17,8 +20,8 @@ export default function Header() {
   const [showCreateTeamModal, setShowCreateTeamModal] = useState(false);
   const [teams, setTeams] = useState([]);
   const [selectedTeam, setSelectedTeam] = useState(null);
-const [showEditTeamModal, setShowEditTeamModal] = useState(false);
-
+  const [inviteTeam, setInviteTeam] = useState(null);
+  const [showEditTeamModal, setShowEditTeamModal] = useState(false);
   const navigate = useNavigate();
 
   const menuRef = useRef(null);
@@ -141,7 +144,6 @@ const [showEditTeamModal, setShowEditTeamModal] = useState(false);
     }
   };
   
-  
   return (
     <>
       {showEditModal && <EditProfile onClose={() => setShowEditModal(false)} />}
@@ -194,6 +196,13 @@ const [showEditTeamModal, setShowEditTeamModal] = useState(false);
             />
           )}
 
+          {inviteTeam && (
+            <InviteModal
+              team={inviteTeam}
+              onClose={() => setInviteTeam(null)}
+            />
+          )}
+
           {menuOpen && (
             <div className="dropdown-menu" ref={menuRef}>
               <div className="room-list-title">🗂 팀 캘린더 목록</div>
@@ -205,6 +214,7 @@ const [showEditTeamModal, setShowEditTeamModal] = useState(false);
                         {team.teamName}
                       </span>
                       <div className='group-btn'>
+                        <button onClick={() => setInviteTeam(team)}>초대</button>
                         <button
                           className="edit-btn-list "
                           onClick={() => {
