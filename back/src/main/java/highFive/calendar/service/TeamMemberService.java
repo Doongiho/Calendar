@@ -1,7 +1,8 @@
 package highFive.calendar.service;
 
-
 import highFive.calendar.config.CustomUserDetails;
+import highFive.calendar.dto.InvitationDto;
+import highFive.calendar.dto.InvitationMapper;
 import highFive.calendar.entity.Invitation;
 import highFive.calendar.entity.Team;
 import highFive.calendar.entity.TeamMember;
@@ -20,9 +21,10 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Optional;
 import java.time.LocalDateTime;
+import java.util.stream.Collectors;
 
 @Service
-public class TeamMemberService {
+public class TeamMemberService implements InvitationMapper {
 
     @Autowired
     private TeamRepository teamRepository;
@@ -35,28 +37,27 @@ public class TeamMemberService {
 
     //  팀원 초대
     @Transactional
-    public Invitation inviteUserToTeam(Long teamId, Long inviterId, Long invitedUserId) {
+    public Invitation inviteUserToTeam(Long teamId, Long inviterId, String invitedUserEmail) {
         Team team = teamRepository.findById(teamId)
                 .orElseThrow(() -> new IllegalArgumentException("팀 정보를 찾을 수 없습니다. Team ID: " + teamId));
         User inviter = userRepository.findById(inviterId)
                 .orElseThrow(() -> new IllegalArgumentException("초대자 정보를 찾을 수 없습니다. User ID: " + inviterId));
-        User invited = userRepository.findById(invitedUserId)
-                .orElseThrow(() -> new IllegalArgumentException("초대받을 사용자 정보를 찾을 수 없습니다. User ID: " + invitedUserId));
+        User invited = userRepository.findByEmail(invitedUserEmail)
+                .orElseThrow(() -> new IllegalArgumentException("해당 유저를 찾을 수 없습니다. User Email" + invitedUserEmail));
 
         // 자기 자신을 초대하는 경우 방지
-        if (inviterId.equals(invitedUserId)) {
+        if (inviterId.equals(invited.getUserId())) {
             throw new IllegalArgumentException("자기 자신을 팀에 초대할 수 없습니다.");
         }
 
         // 초대자가 해당 팀의 멤버인지 확인 (권한 검사)
-         if (!teamMemberRepository.existsByTeam_TeamIdAndUser_UserId(teamId, inviterId)) {
+        if (!teamMemberRepository.existsByTeam_TeamIdAndUser_UserId(teamId, inviterId)) {
             throw new IllegalStateException("팀 멤버만 다른 사용자를 초대할 수 있습니다.");
-         }
-
+        }
 
         // 이미 해당 팀의 멤버인지 확인
-        if (teamMemberRepository.existsByTeam_TeamIdAndUser_UserId(teamId, invitedUserId)) {
-            throw new IllegalArgumentException("이미 해당 팀의 멤버입니다. User ID: " + invitedUserId);
+        if (teamMemberRepository.existsByTeam_TeamIdAndUser_UserId(teamId, invited.getUserId())) {
+            throw new IllegalArgumentException("이미 해당 팀의 멤버입니다. User ID: ");
         }
 
         // 이미 PENDING 상태의 초대가 있는지 확인
@@ -74,6 +75,31 @@ public class TeamMemberService {
                 .status(InvitationStatus.PENDING)
                 .build();
         return invitationRepository.save(invitation);
+    }
+
+    //  팀원 초대 현황 조회
+    public List<InvitationDto> getInvitations(Long teamId) {
+        List<Invitation> invitations = invitationRepository.findByTeam_TeamId(teamId);
+
+        return invitations.stream()
+                .map(this::entityToDto)
+                .collect(Collectors.toList());
+    }
+
+    //  초대 취소
+    public void deleteInvitation(Long teamId, Long invitationId) {
+        Invitation invitation = invitationRepository.findById(invitationId)
+                .orElseThrow(() -> new IllegalArgumentException("초대를 찾을 수 없습니다."));
+
+        if (!invitation.getTeam().getTeamId().equals(teamId)) {
+            throw new IllegalArgumentException("해당 초대는 이 팀에 속하지 않습니다.");
+        }
+
+        if (invitation.getStatus() != InvitationStatus.PENDING) {
+            throw new IllegalStateException("이미 수락/거절된 초대는 취소할 수 없습니다.");
+        }
+
+        invitationRepository.delete(invitation);
     }
 
     //  초대 수락
@@ -176,9 +202,14 @@ public class TeamMemberService {
         Team team = teamRepository.findById(teamId)
                 .orElseThrow(() -> new IllegalArgumentException("Team not found"));
 
-        // 팀 생성자 확인
+        //  팀 생성자 확인
         if (!team.getUser().getUserId().equals(currentUserId)) {
             throw new IllegalArgumentException("팀 생성자만 강제 퇴장시킬 수 있습니다.");
+        }
+
+        //  자기 자신 강퇴 방지
+        if (targetUserId.equals(currentUserId)) {
+            throw new IllegalArgumentException("팀 생성자는 자신을 강퇴할 수 없습니다.");
         }
 
         User targetUser = userRepository.findById(targetUserId)
@@ -201,4 +232,5 @@ public class TeamMemberService {
 
         return invitation.getInvitedUser().getUserId().equals(userId);
     }
+
 }

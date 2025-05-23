@@ -1,6 +1,5 @@
 package highFive.calendar.service;
 
-
 import highFive.calendar.entity.Team;
 import highFive.calendar.entity.TeamSchedule;
 import highFive.calendar.entity.User;
@@ -70,7 +69,7 @@ public class TeamScheduleService {
     @Transactional
     public void deleteTeamSchedule(Long teamScheduleId) {
         TeamSchedule teamSchedule = teamScheduleRepository.findById(teamScheduleId)
-                        .orElseThrow(() -> new IllegalArgumentException("Team Schedule not found"));
+                .orElseThrow(() -> new IllegalArgumentException("Team Schedule not found"));
 
         teamScheduleRepository.deleteById(teamScheduleId);
     }

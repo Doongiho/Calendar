@@ -6,6 +6,7 @@ import highFive.calendar.entity.Invitation;
 import highFive.calendar.entity.Team;
 import highFive.calendar.entity.TeamMember;
 import highFive.calendar.entity.User;
+import highFive.calendar.repository.InvitationRepository;
 import highFive.calendar.repository.UserRepository;
 import highFive.calendar.service.TeamMemberService;
 import highFive.calendar.service.TeamService;
@@ -29,7 +30,9 @@ public class TeamController implements TeamMapper, TeamMemberMapper, InvitationM
     @Autowired
     private TeamMemberService teamMemberService;
 
+    //  팀 생성
     @PostMapping("")
+    @PreAuthorize("principal.userId == #teamDto.userId")
     public ResponseEntity<ApiResponse<TeamDto>> createTeam(@RequestBody TeamDto teamDto) {
         try {
             User user = userRepository.findById(teamDto.getUserId())
@@ -164,14 +167,15 @@ public class TeamController implements TeamMapper, TeamMemberMapper, InvitationM
     @PostMapping("/{teamId}/invitations")
     @PreAuthorize("@teamMemberService.isTeamMember(#teamId, principal.userId)")
     public ResponseEntity<ApiResponse<InvitationDto>> inviteUserToTeam(@PathVariable(name = "teamId") Long teamId,
-            @RequestParam(name = "invitedUserId") Long invitedUserId,
+            @RequestBody InvitationDto invitationDto,
             @AuthenticationPrincipal CustomUserDetails inviter) {
         try {
-            Invitation invitation = teamMemberService.inviteUserToTeam(teamId, inviter.getUserId(), invitedUserId);
-            InvitationDto invitationDto = entityToDto(invitation);
+            String invitedUserEmail = invitationDto.getInvitedUserEmail();
+            Invitation invitation = teamMemberService.inviteUserToTeam(teamId, inviter.getUserId(), invitedUserEmail);
+            InvitationDto responseDto = entityToDto(invitation);
 
             ApiResponse<InvitationDto> response = ApiResponse.<InvitationDto>builder()
-                    .data(invitationDto)
+                    .data(responseDto)
                     .message("사용자 초대 성공")
                     .build();
 
@@ -180,6 +184,51 @@ public class TeamController implements TeamMapper, TeamMemberMapper, InvitationM
             ApiResponse<InvitationDto> response = ApiResponse.<InvitationDto>builder()
                     .data(null)
                     .message("사용자 초대 실패: " + e.getMessage())
+                    .build();
+
+            return ResponseEntity.badRequest().body(response);
+        }
+    }
+
+    //  팀원 초대 현황 조회
+    @GetMapping("/{teamId}/invitations")
+    public ResponseEntity<ApiResponse<List<InvitationDto>>> getInvitations(@PathVariable(name = "teamId") Long teamId) {
+        try {
+            List<InvitationDto> invitationDtos = teamMemberService.getInvitations(teamId);
+
+            ApiResponse<List<InvitationDto>> response = ApiResponse.<List<InvitationDto>>builder()
+                    .data(invitationDtos)
+                    .message("초대 현황 조회 성공")
+                    .build();
+
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            ApiResponse<List<InvitationDto>> response = ApiResponse.<List<InvitationDto>>builder()
+                    .data(null)
+                    .message("초대 현황 조회 실패")
+                    .build();
+
+            return ResponseEntity.badRequest().body(response);
+        }
+    }
+
+    //  초대 취소
+    @DeleteMapping("/{teamId}/invitations/{invitationId}")
+    public ResponseEntity<ApiResponse<Void>> deleteInvitation(@PathVariable(name = "teamId") Long teamId,
+            @PathVariable(name = "invitationId") Long invitationId) {
+        try {
+            teamMemberService.deleteInvitation(teamId, invitationId);
+
+            ApiResponse<Void> response = ApiResponse.<Void>builder()
+                    .data(null)
+                    .message("초대 취소 성공")
+                    .build();
+
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            ApiResponse<Void> response = ApiResponse.<Void>builder()
+                    .data(null)
+                    .message("초대 취소 실패 : " + e.getMessage())
                     .build();
 
             return ResponseEntity.badRequest().body(response);
