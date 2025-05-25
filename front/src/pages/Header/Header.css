@@ -56,7 +56,15 @@ header {
   height: 20px;
   margin: auto 0;
 }
-
+.invite-btn-list {
+  padding: 2px 4px;
+  background: #ffcd00;
+  color: #fff;
+  border-radius: 4px;
+  cursor: pointer;
+  height: 20px;
+  margin: auto 0;
+}
 .edit-btn-list{
   padding: 2px 4px;
   background: #ffcd00;

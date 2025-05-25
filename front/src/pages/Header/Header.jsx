@@ -7,6 +7,7 @@ import { fetchTeamsByUser, createTeam, deleteTeam, updateTeam } from "../../api/
 import EditProfile from 'pages/EditProfile/EditProfile';
 import CreateTeamModal from 'components/CreateTeamModal/CreateTeamModal';
 import EditTeamModal  from 'components/EditTeamModal/EditTeamModal'
+import InviteModal from 'components/InviteModal/InviteModal';
 
 export default function Header() {
   const { user, setUser } = useUser();
@@ -17,7 +18,8 @@ export default function Header() {
   const [showCreateTeamModal, setShowCreateTeamModal] = useState(false);
   const [teams, setTeams] = useState([]);
   const [selectedTeam, setSelectedTeam] = useState(null);
-const [showEditTeamModal, setShowEditTeamModal] = useState(false);
+  const [showEditTeamModal, setShowEditTeamModal] = useState(false);
+  const [inviteTeam, setInviteTeam] = useState(null); 
 
   const navigate = useNavigate();
 
@@ -105,9 +107,9 @@ const [showEditTeamModal, setShowEditTeamModal] = useState(false);
       console.log("생성된 team:", newTeam);
 
       const updatedTeams = await fetchTeamsByUser(user.userId);
-      setTeams(updatedTeams); // ✅ 여기 수정됨
+      setTeams(updatedTeams);
 
-      alert("팀이 생성되었습니다.");
+      alert("");
       setShowCreateTeamModal(false);
     } catch (error) {
       console.error("팀 생성 실패:", error);
@@ -194,6 +196,13 @@ const [showEditTeamModal, setShowEditTeamModal] = useState(false);
             />
           )}
 
+          {inviteTeam && (
+            <InviteModal
+              team={inviteTeam}
+              onClose={() => setInviteTeam(null)}
+            />
+          )}
+
           {menuOpen && (
             <div className="dropdown-menu" ref={menuRef}>
               <div className="room-list-title">🗂 팀 캘린더 목록</div>
@@ -205,8 +214,14 @@ const [showEditTeamModal, setShowEditTeamModal] = useState(false);
                         {team.teamName}
                       </span>
                       <div className='group-btn'>
+                      <button
+                        className="invite-btn-list"
+                        onClick={() => setInviteTeam(team)} 
+                      >
+                        초대
+                      </button>
                         <button
-                          className="edit-btn-list "
+                          className="edit-btn-list"
                           onClick={() => {
                             setSelectedTeam(team);
                             setShowEditTeamModal(true);
