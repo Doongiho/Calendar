@@ -4,6 +4,11 @@ import { useUser } from '../../contexts/UserContext';
 import { useNavigate } from 'react-router-dom';
 import { deleteUser } from "../../api/userApi";
 import { fetchTeamsByUser, createTeam, deleteTeam, updateTeam } from "../../api/teamApi";
+import {
+  fetchPendingInvitations,
+  acceptInvitation,
+  rejectInvitation
+} from "../../api/invitationApi";
 import EditProfile from 'pages/EditProfile/EditProfile';
 import CreateTeamModal from 'components/CreateTeamModal/CreateTeamModal';
 import EditTeamModal  from 'components/EditTeamModal/EditTeamModal'
@@ -20,35 +25,34 @@ export default function Header() {
   const [selectedTeam, setSelectedTeam] = useState(null);
   const [showEditTeamModal, setShowEditTeamModal] = useState(false);
   const [inviteTeam, setInviteTeam] = useState(null); 
+  const [invitations, setInvitations] = useState([]);
+  const [showInvitations, setShowInvitations] = useState(false);
 
   const navigate = useNavigate();
-
   const menuRef = useRef(null);
   const userMenuRef = useRef(null);
 
   useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (menuRef.current && !menuRef.current.contains(e.target)) {
-        setMenuOpen(false);
-      }
-      if (userMenuRef.current && !userMenuRef.current.contains(e.target)) {
-        setUserMenuOpen(false);
+    if (!user?.userId) return;
+  
+    const initializeData = async () => {
+      try {
+        const [teamsRes, invitationsRes] = await Promise.all([
+          fetchTeamsByUser(user.userId),
+          fetchPendingInvitations(user.userId)
+        ]);
+        setTeams(teamsRes);
+        setInvitations(invitationsRes);
+      } catch (err) {
+        console.error("초기 데이터 불러오기 실패", err);
+        setTeams([]);
+        setInvitations([]);
       }
     };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
-
-  // ✅ 새로고침 시 자동 팀 불러오기
-  useEffect(() => {
-    if (user?.userId) {
-      fetchTeamsByUser(user.userId)
-        .then(setTeams)
-        .catch(() => setTeams([]));
-    }
+  
+    initializeData();
   }, [user?.userId]);
+  
 
   const handleLogout = () => {
     localStorage.removeItem('user');
@@ -85,7 +89,47 @@ export default function Header() {
   const handleUserMenuToggle = () => {
     setUserMenuOpen(!userMenuOpen);
     setMenuOpen(false);
+    setShowInvitations(false);
   };
+
+  const handleAlarmClick = async () => {
+    if (!user?.userId) return;
+  
+    try {
+      const pending = await fetchPendingInvitations(user.userId);
+      setInvitations(pending);
+    } catch (err) {
+      console.error("초대 목록 오류", err);
+      setInvitations([]);
+    }
+  
+    setShowInvitations((prev) => !prev);
+  };
+  
+
+  const handleRespond = async (invitationId, action) => {
+    try {
+      if (action === "ACCEPTED") {
+        await acceptInvitation(user.userId, invitationId);
+      } else {
+        await rejectInvitation(user.userId, invitationId);
+      }
+  
+      const updated = await fetchPendingInvitations(user.userId);
+      setInvitations(updated);
+  
+      const updatedTeams = await fetchTeamsByUser(user.userId);
+      setTeams(updatedTeams);
+  
+      alert(`초대를 ${action === "ACCEPTED" ? "수락" : "거절"}했습니다.`);
+    } catch (err) {
+      console.error("응답 오류", err);
+      alert("응답 처리 중 오류가 발생했습니다.");
+    }
+  };
+  
+  
+  
 
   const handleCreateTeam = async ({ teamName, description }) => {
     if (!user || !user.token) {
@@ -94,23 +138,12 @@ export default function Header() {
     }
 
     try {
-      const newTeam = await createTeam({
-        userId: user.userId,
-        teamName,
-        description,
-      });
-
-      if (!newTeam || !newTeam.teamId) {
-        throw new Error("생성된 팀의 ID가 없습니다.");
-      }
-
-      console.log("생성된 team:", newTeam);
-
+      const newTeam = await createTeam({ userId: user.userId, teamName, description });
+      if (!newTeam?.teamId) throw new Error("팀 생성 실패");
       const updatedTeams = await fetchTeamsByUser(user.userId);
       setTeams(updatedTeams);
       setShowCreateTeamModal(false);
     } catch (error) {
-      console.error("팀 생성 실패:", error);
       alert("팀 생성 중 오류가 발생했습니다.");
     }
   };
@@ -165,8 +198,11 @@ export default function Header() {
         <div className="pc-header">
           <div className="mobile-title">{userName}님의 개인 일정표</div>
           <div className="pc-submenu submenu">
-            <div className="alarm">
+          <div className="alarm" onClick={handleAlarmClick}>
               <span className="material-symbols-outlined">notifications</span>
+              {invitations.length > 0 && (
+                <span className="badge">{invitations.length}</span>
+              )}
             </div>
             <div className="mypage-box">
               <div className="mypage" onClick={handleUserMenuToggle}>
@@ -198,29 +234,47 @@ export default function Header() {
             <InviteModal
               team={inviteTeam}
               onClose={() => setInviteTeam(null)}
+              setInvitations={setInvitations}
             />
           )}
+
+          {showInvitations && (
+            <div className="dropdown-menu" ref={userMenuRef}>
+              <div className="room-list-title">받은 초대</div>
+              <ul className="room-list">
+                {invitations.length === 0 ? (
+                  <li className="room-item muted">초대가 없습니다</li>
+                ) : (
+                  invitations.map((inv) => (
+                    <li key={inv.invitationId} className="room-item">
+                      <span>{inv.teamName}</span>
+                      <div className="group-btn">
+                        <button onClick={() => handleRespond(inv.invitationId, "ACCEPTED")}>수락</button>
+                        <button onClick={() => handleRespond(inv.invitationId, "REJECTED")}>거절</button>
+                      </div>
+                    </li>
+                  ))
+                )}
+              </ul>
+            </div>
+          )}
+
 
           {menuOpen && (
             <div className="dropdown-menu" ref={menuRef}>
               <div className="room-list-title">팀 캘린더 목록</div>
-
               <ul className="room-list">
-                {Array.isArray(teams) && teams.length > 0 ? (
-                  [...teams]
-                    .filter((team) => {
-                      // 방장이거나 수락한 팀만 표시
-                      return (
-                        team.userId === user.userId ||
-                        (team.invitationStatus &&
-                          team.invitationStatus.toUpperCase() === "ACCEPTED")
-                      );
-                    })
-                    .sort((a, b) => {
-                      if (a.userId === user.userId && b.userId !== user.userId) return -1;
-                      if (a.userId !== user.userId && b.userId === user.userId) return 1;
-                      return a.teamName.localeCompare(b.teamName);
-                    })
+                {teams.length > 0 ? (
+                  teams
+                    .filter((team) =>
+                      team.userId === user.userId ||
+                      (team.invitationStatus?.toUpperCase() === "ACCEPTED")
+                    )
+                    .sort((a, b) =>
+                      a.userId === user.userId && b.userId !== user.userId ? -1 :
+                      a.userId !== user.userId && b.userId === user.userId ? 1 :
+                      a.teamName.localeCompare(b.teamName)
+                    )
                     .map((team) => (
                       <li key={team.teamId} className="room-item">
                         <span
@@ -230,35 +284,15 @@ export default function Header() {
                         >
                           {team.teamName}
                         </span>
-                        {/* 팀원 뱃지 */}
-                        {team.userId !== user.userId && (
-                          <span className="badge" title="팀 관리 권한 없음">팀원</span>
-                        )}
-
-                        {/* 방장만 관리 버튼 표시 */}
+                        {team.userId !== user.userId && <span className="badge">팀원</span>}
                         {team.userId === user.userId && (
                           <div className="group-btn">
-                            <button
-                              className="invite-btn-list"
-                              onClick={() => setInviteTeam(team)}
-                            >
-                              초대
-                            </button>
-                            <button
-                              className="edit-btn-list"
-                              onClick={() => {
-                                setSelectedTeam(team);
-                                setShowEditTeamModal(true);
-                              }}
-                            >
-                              수정
-                            </button>
-                            <button
-                              className="delete-btn-list"
-                              onClick={() => handleDeleteTeam(team.teamId)}
-                            >
-                              삭제
-                            </button>
+                            <button className="invite-btn-list" onClick={() => setInviteTeam(team)}>초대</button>
+                            <button className="edit-btn-list" onClick={() => {
+                              setSelectedTeam(team);
+                              setShowEditTeamModal(true);
+                            }}>수정</button>
+                            <button className="delete-btn-list" onClick={() => handleDeleteTeam(team.teamId)}>삭제</button>
                           </div>
                         )}
                       </li>
@@ -267,12 +301,7 @@ export default function Header() {
                   <li className="room-item muted">팀이 없습니다</li>
                 )}
               </ul>
-              <button
-                onClick={() => setShowCreateTeamModal(true)}
-                className="create-room-button"
-              >
-                팀 방 만들기
-              </button>
+              <button className="create-room-button" onClick={() => setShowCreateTeamModal(true)}>팀 방 만들기</button>
             </div>
           )}
         </div>

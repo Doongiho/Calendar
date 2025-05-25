@@ -1,24 +1,38 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react"; 
 import "./InviteModal.css";
 import { inviteUserToTeam, fetchInvitationsByTeam } from "../../api/teamApi";
+import { fetchPendingInvitations } from "../../api/invitationApi";
+import { useUser } from "../../contexts/UserContext";
 import { FaPaperPlane } from "react-icons/fa";
 
-export default function InviteModal({ team, onClose }) {
+export default function InviteModal({ team, onClose, setInvitations  }) {
   const [email, setEmail] = useState("");
   const [invitedEmails, setInvitedEmails] = useState([]);
+  const { user } = useUser();
 
   const loadInvitedEmails = async () => {
     try {
       const data = await fetchInvitationsByTeam(team.teamId);
       setInvitedEmails(data.map((inv) => inv.invitedUserEmail));
     } catch (error) {
-      console.error("❌ 초대 목록 불러오기 실패:", error);
+      console.error("초대 목록 불러오기 실패:", error);
     }
   };
 
   useEffect(() => {
-    loadInvitedEmails();
-  }, [team.teamId]);
+    const fetchInitialInvitations = async () => {
+      if (!user?.userId) return;
+      try {
+        const pending = await fetchPendingInvitations(user.userId);
+        setInvitations(pending);
+      } catch (err) {
+        console.error("초기 초대 목록 오류", err);
+        setInvitations([]);
+      }
+    };
+  
+    fetchInitialInvitations();
+  }, [user?.userId]);
 
   const handleInvite = async () => {
     if (!email || !email.includes("@")) {
@@ -31,7 +45,7 @@ export default function InviteModal({ team, onClose }) {
       alert("초대가 완료되었습니다.");
       loadInvitedEmails(); 
     } catch (error) {
-      console.error("❌ 초대 실패:", error);
+      console.error("초대 실패:", error);
       const serverMsg = error?.response?.data?.message;
       alert(serverMsg || "초대 중 오류가 발생했습니다.");
     }
@@ -60,7 +74,7 @@ export default function InviteModal({ team, onClose }) {
             {invitedEmails.length > 0 ? (
               invitedEmails.map((mail, idx) => <li key={idx}>{mail}</li>)
             ) : (
-              <li>초대받은 사람이 없습니다.</li>
+              <li>초대보낸 사람이 없습니다.</li>
             )}
           </ul>
         </div>

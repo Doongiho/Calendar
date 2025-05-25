@@ -8,11 +8,10 @@ import { useUser } from "../../contexts/UserContext";
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [autoLogin, setAutoLogin] = useState(false); // 🔹 자동 로그인 체크 상태
+  const [autoLogin, setAutoLogin] = useState(false); 
   const { setUser } = useUser();
   const navigate = useNavigate();
 
-  // 🔹 앱이 열릴 때 자동 로그인 여부 확인
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
 
@@ -31,26 +30,31 @@ export default function LoginPage() {
 
   const handleLogin = async (e) => {
     e.preventDefault();
-
+  
     if (!email || !password) {
       alert("이메일과 비밀번호를 모두 입력해주세요.");
       return;
     }
-
+  
     try {
       const loginResponse = await loginUser(email, password);
+      const { data, token } = loginResponse;
+  
+      if (!token || !data?.userId) {
+        throw new Error("유효한 로그인 정보가 없습니다.");
+      }
+  
       const userData = {
-        ...loginResponse.data,
-        token: loginResponse.token,
+        userId: data.userId,
+        name: data.name || data.email,
+        email: data.email,
+        token: token, 
       };
-
-      setUser(userData);
-      localStorage.setItem("user", JSON.stringify(userData));
-
-      const userId = userData.userId;
-      if (!userId) throw new Error("사용자 ID를 찾을 수 없습니다.");
-
-      navigate(`/MyCalendar/${userId}`, {
+  
+      setUser(userData); 
+      localStorage.setItem("user", JSON.stringify(userData)); 
+  
+      navigate(`/MyCalendar/${userData.userId}`, {
         state: { user: userData },
       });
     } catch (error) {
@@ -58,12 +62,12 @@ export default function LoginPage() {
       console.error("로그인 오류:", error);
     }
   };
-
+  
+  
 
   return (
     <div className="login-container">
       <div className="login-content">
-        {/* 왼쪽 */}
         <div className="login-left">
           <img src="/img/ERY 1.png" alt="로고" className="login-logo" />
           <div className="login-message">
@@ -72,8 +76,6 @@ export default function LoginPage() {
             <div>일정공유하자</div>
           </div>
         </div>
-
-        {/* 오른쪽 로그인 박스 */}
         <div className="login-right">
           <div className="login-box">
             <div className="login-inner">
@@ -82,8 +84,6 @@ export default function LoginPage() {
                 <br />
                 입력해주세요.
               </div>
-
-              {/* 로그인 폼 */}
               <form onSubmit={handleLogin}>
                 <InputField
                   id="email"
@@ -101,8 +101,6 @@ export default function LoginPage() {
                   placeholder="비밀번호 입력"
                   label="비밀번호"
                 />
-
-                {/* 로그인 버튼 */}
                 <button
                   type="submit"
                   className="login-button"
@@ -114,8 +112,6 @@ export default function LoginPage() {
                   로그인
                 </button>
               </form>
-
-              {/* 하단 링크 */}
               <div className="login-footer">
                 <label className="checkbox">
                   <input
