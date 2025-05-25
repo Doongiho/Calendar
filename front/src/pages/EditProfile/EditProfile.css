@@ -52,7 +52,6 @@
 
   .dropdown-menu{
     background: #ffffff;
-    width: 200px;
     display: flex;
     flex-direction: column;
     border: 1px solid;
@@ -68,6 +67,14 @@
     border-bottom: 1px solid #eee;
     padding: 10px;
   }
-  .dropdown-menu>button:last-child{
+
+  .dropdown-menu>button:last-child {
     border-bottom: none;
+  }
+  .create-room-button:last-child{
+    border-bottom: none;
+    background: #eaeaea;
+  }
+  .create-room-button:hover {
+    background: #bcbcbc;
   }

@@ -10,63 +10,42 @@ import {
 } from "../../api/scheduleApi";
 
 const Calendar = ({ onDateSelect, userId }) => {
-  const DEFAULT_SIZE = window.innerWidth;
   const monthNames = [
-    "January",
-    "February",
-    "March",
-    "April",
-    "May",
-    "June",
-    "July",
-    "August",
-    "September",
-    "October",
-    "November",
-    "December",
+    "1월", "2월", "3월", "4월", "5월", "6월",
+    "7월", "8월", "9월", "10월", "11월", "12월"
   ];
-  const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  const dayNames = ["일", "월", "화", "수", "목", "금", "토"];
 
   const [schedules, setSchedules] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [selectedDate, setSelectedDate] = useState("");
-
   const [currentDate, setCurrentDate] = useState(new Date());
-  const currentYear = currentDate.getFullYear();
-  const currentMonth = currentDate.getMonth();
-
   const [selectedSchedule, setSelectedSchedule] = useState(null);
   const [editingSchedule, setEditingSchedule] = useState(null);
+
+  const currentYear = currentDate.getFullYear();
+  const currentMonth = currentDate.getMonth();
 
   useEffect(() => {
     if (userId) {
       fetchUserSchedules(userId)
-        .then((res) => {
-          setSchedules(res.data);
-        })
+        .then((res) => setSchedules(res.data))
         .catch((err) => console.error("일정 불러오기 실패:", err));
     }
   }, [userId]);
 
   const formattedDate = (date) => {
-    const format = (n) => (n < 10 ? `0${n}` : `${n}`);
-    return `${date.getFullYear()}-${format(date.getMonth() + 1)}-${format(
-      date.getDate()
-    )}`;
+    const pad = (n) => (n < 10 ? `0${n}` : `${n}`);
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
   };
 
-  const diffDays = (from, to) => {
-    const MILLISECONDS_PER_DAY = 86_400_000;
-    return Math.abs(to - from) / MILLISECONDS_PER_DAY;
-  };
+  const diffDays = (from, to) => Math.abs(to - from) / 86400000;
 
   const eachCalendarDates = () => {
     const firstDay = new Date(currentYear, currentMonth, 1).getDay();
     const lastDay = new Date(currentYear, currentMonth + 1, 0).getDay();
-
     const from = new Date(currentYear, currentMonth, 1 - firstDay);
     const to = new Date(currentYear, currentMonth + 1, 7 - (lastDay + 1));
-
     return Array.from({ length: diffDays(from, to) + 1 }, (_, i) => {
       if (i !== 0) from.setDate(from.getDate() + 1);
       return new Date(from);
@@ -81,11 +60,9 @@ const Calendar = ({ onDateSelect, userId }) => {
   const classNames = (date) => {
     const today = new Date();
     const classes = [];
-
     if (isEqualDate(date, today)) classes.push("today");
     if (date.getMonth() !== currentMonth) classes.push("muted");
     if (date.getDay() === 0) classes.push("sunday");
-
     return classes.join(" ");
   };
 
@@ -100,137 +77,69 @@ const Calendar = ({ onDateSelect, userId }) => {
     onDateSelect?.(dateStr);
   };
 
-  const handleEdit = (scheduleToEdit) => {
+  const handleEdit = (schedule) => {
     setSelectedSchedule(null);
-    setEditingSchedule(scheduleToEdit);
+    setEditingSchedule(schedule);
     setShowForm(true);
   };
 
-  const handleDelete = (scheduleToDelete) => {
-    const id = scheduleToDelete.scheduleId || scheduleToDelete.id;
-
-    if (!id) {
-      alert("삭제할 일정 ID가 없습니다.");
-      return;
-    }
-
+  const handleDelete = (schedule) => {
+    const id = schedule.scheduleId || schedule.id;
+    if (!id) return alert("삭제할 일정 ID가 없습니다.");
     deleteSchedule(id)
-      .then(() => {
-        setSchedules((prev) =>
-          prev.filter((s) => (s.scheduleId || s.id) !== id)
-        );
-        setSelectedSchedule(null);
-      })
-      .catch((err) => {
-        console.error("일정 삭제 실패:", err);
-        alert("일정 삭제 중 오류가 발생했습니다.");
-      });
+      .then(() => setSchedules((prev) => prev.filter((s) => (s.scheduleId || s.id) !== id)))
+      .catch((err) => alert("일정 삭제 중 오류 발생"));
   };
 
   const handleFormSubmit = (schedule) => {
     const id = schedule.scheduleId || schedule.id;
-
-    const payload = {
-      title: schedule.title,
-      description: schedule.description,
-      startDate: schedule.startDate,
-      endDate: schedule.endDate,
-      color: schedule.color,
-      userId: Number(userId),
-    };
-
+    const payload = { ...schedule, userId: Number(userId) };
     if (id) {
-      // ✅ 수정
-      updateSchedule(id, payload)
-        .then((res) => {
-          const updated = {
-            ...res.data,
-            id: res.data.scheduleId,
-          };
-          setSchedules((prev) =>
-            prev.map((s) => ((s.id || s.scheduleId) === id ? updated : s))
-          );
-        })
-        .catch((err) => {
-          console.error("일정 수정 실패:", err);
-        });
+      updateSchedule(id, payload).then((res) => {
+        const updated = { ...res.data, id: res.data.scheduleId };
+        setSchedules((prev) => prev.map((s) => ((s.id || s.scheduleId) === id ? updated : s)));
+      });
     } else {
-      // 신규 등록
-      createSchedule({ ...payload })
-        .then((res) => {
-          const created = {
-            ...res.data,
-            id: res.data.scheduleId,
-          };
-          setSchedules((prev) => [...prev, created]);
-        })
-        .catch((err) => {
-          console.error("일정 추가 실패:", err);
-        });
+      createSchedule(payload).then((res) => {
+        const created = { ...res.data, id: res.data.scheduleId };
+        setSchedules((prev) => [...prev, created]);
+      });
     }
-
     setShowForm(false);
     setEditingSchedule(null);
   };
 
   return (
-    <div
-      className="calendar-container"
-      style={{ "--calendar-width": `${DEFAULT_SIZE}px` }}
-    >
+    <div className="calendar-container">
       <div className="calendar-nav">
-        <i
-          className="prev bx bx-caret-left"
-          onClick={() => handleNavigationClick(-1)}
-        ></i>
+        <i className="prev bx bx-chevron-left" onClick={() => handleNavigationClick(-1)}></i>
         <div className="calendar-title">
-          <div className="month">{monthNames[currentMonth]}</div>
-          <div className="year">{currentYear}</div>
+          <h2>{currentYear}년 {monthNames[currentMonth]}</h2>
         </div>
-        <i
-          className="next bx bx-caret-right"
-          onClick={() => handleNavigationClick(1)}
-        ></i>
+        <i className="next bx bx-chevron-right" onClick={() => handleNavigationClick(1)}></i>
       </div>
 
       <div className="calendar-grid">
         {dayNames.map((dayName) => (
-          <div key={dayName} className="day">
-            {dayName}
-          </div>
+          <div key={dayName} className="day-header">{dayName}</div>
         ))}
         {eachCalendarDates().map((date) => (
           <div
             key={formattedDate(date)}
-            data-date={formattedDate(date)}
-            className="day-box"
+            className={`day-cell ${classNames(date)}`}
             onClick={() => handleDateClick(date)}
           >
-            <div className={`${classNames(date)} date-text`}>
-              {date.getDate()}
-            </div>
-            <div className="todo-container">
+            <div className="date-number">{date.getDate()}</div>
+            <div className="todo-list-wrap">
               {schedules
                 .filter(
-                  (s) =>
-                    s.startDate <= formattedDate(date) &&
-                    s.endDate >= formattedDate(date)
+                  (s) => s.startDate <= formattedDate(date) && s.endDate >= formattedDate(date)
                 )
                 .map((s, idx) => (
                   <div
                     key={idx}
-                    className="todo-list"
-                    style={{
-                      background: s.color,
-                      color: "#fff",
-                      padding: "2px 4px",
-                      borderRadius: "4px",
-                      margin: "2px 0",
-                      fontSize: "0.8em",
-                      whiteSpace: "nowrap",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                    }}
+                    className="todo-item"
+                    style={{ backgroundColor: s.color }}
                     title={s.title}
                     onClick={(e) => {
                       e.stopPropagation();
@@ -245,7 +154,6 @@ const Calendar = ({ onDateSelect, userId }) => {
         ))}
       </div>
 
-      {/* 일정 추가 폼 모달 */}
       {showForm && (
         <ScheduleForm
           initialDate={selectedDate}
@@ -255,7 +163,6 @@ const Calendar = ({ onDateSelect, userId }) => {
         />
       )}
 
-      {/* 일정 상세 모달 */}
       {selectedSchedule && (
         <ScheduleDetailModal
           schedule={selectedSchedule}

@@ -1,6 +1,7 @@
 header {
   width: 100%;
 }
+
 .pc-header {
   justify-content: space-between;
   width: 90%;
@@ -8,12 +9,14 @@ header {
   margin: auto;
   position: relative;
 }
+
 .mo-header {
   justify-content: space-between;
   width: 90%;
   padding-top: 20px;
   margin: auto;
 }
+
 .title {
   font-size: 1.5rem;
 }
@@ -23,6 +26,7 @@ header {
   justify-content: space-between;
   width: 12%;
 }
+
 .alarm {
   cursor: pointer;
 }
@@ -56,16 +60,18 @@ header {
   height: 20px;
   margin: auto 0;
 }
+
 .invite-btn-list {
   padding: 2px 4px;
-  background: #ffcd00;
+  background: #5700e2;
   color: #fff;
   border-radius: 4px;
   cursor: pointer;
   height: 20px;
   margin: auto 0;
 }
-.edit-btn-list{
+
+.edit-btn-list {
   padding: 2px 4px;
   background: #ffcd00;
   color: #fff;
@@ -81,10 +87,60 @@ header {
   gap: 10px;
 }
 
+.badge {
+  background-color: #e0e0e0;
+  color: #555;
+  padding: 2px 6px;
+  margin-left: 8px;
+  font-size: 12px;
+  border-radius: 10px;
+}
+
+.team-name {
+  display: inline-block;
+  max-width: 120px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: middle;
+}
+
+.group-btn {
+  display: flex;
+  gap: 5px;
+  margin-top: 4px;
+}
+
+.room-list {
+  padding: 10px 5px;
+  min-width: 200px;
+}
+
+.invite-btn-list,
+.edit-btn-list,
+.delete-btn-list {
+  padding: 2px 6px;
+  font-size: 12px;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+}
+
+.delete-btn-list {
+  background-color: #f44336;
+  color: #fff;
+}
+
+.delete-btn-list:hover {
+  background-color: #d32f2f;
+}
+
+
 @media (max-width: 767px) {
   .mo-header {
     display: flex;
   }
+
   .pc-header {
     display: none;
   }
@@ -94,6 +150,7 @@ header {
   .mo-header {
     display: none;
   }
+
   .pc-header {
     display: flex;
   }

@@ -41,8 +41,8 @@ export default function InviteModal({ team, onClose }) {
     <div className="modal-backdrop">
       <div className="modal">
         <button className="close-btn" onClick={onClose} aria-label="닫기">×</button>
-
-        <h3>{team.teamName} 팀 초대</h3>
+        <h3>팀 초대</h3>
+        <h3>{team.teamName}</h3>
         <div className="input-div">
           <input
             type="email"
@@ -60,7 +60,7 @@ export default function InviteModal({ team, onClose }) {
             {invitedEmails.length > 0 ? (
               invitedEmails.map((mail, idx) => <li key={idx}>{mail}</li>)
             ) : (
-              <li>없음</li>
+              <li>초대받은 사람이 없습니다.</li>
             )}
           </ul>
         </div>

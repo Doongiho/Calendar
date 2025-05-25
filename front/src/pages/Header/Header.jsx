@@ -108,8 +108,6 @@ export default function Header() {
 
       const updatedTeams = await fetchTeamsByUser(user.userId);
       setTeams(updatedTeams);
-
-      alert("");
       setShowCreateTeamModal(false);
     } catch (error) {
       console.error("팀 생성 실패:", error);
@@ -205,39 +203,66 @@ export default function Header() {
 
           {menuOpen && (
             <div className="dropdown-menu" ref={menuRef}>
-              <div className="room-list-title">🗂 팀 캘린더 목록</div>
+              <div className="room-list-title">팀 캘린더 목록</div>
+
               <ul className="room-list">
                 {Array.isArray(teams) && teams.length > 0 ? (
-                  teams.map((team) => (
-                    <li key={team.teamId} className="room-item">
-                      <span onClick={() => navigate(`/teams/${team.teamId}`)}>
-                        {team.teamName}
-                      </span>
-                      <div className='group-btn'>
-                      <button
-                        className="invite-btn-list"
-                        onClick={() => setInviteTeam(team)} 
-                      >
-                        초대
-                      </button>
-                        <button
-                          className="edit-btn-list"
-                          onClick={() => {
-                            setSelectedTeam(team);
-                            setShowEditTeamModal(true);
-                          }}
+                  [...teams]
+                    .filter((team) => {
+                      // 방장이거나 수락한 팀만 표시
+                      return (
+                        team.userId === user.userId ||
+                        (team.invitationStatus &&
+                          team.invitationStatus.toUpperCase() === "ACCEPTED")
+                      );
+                    })
+                    .sort((a, b) => {
+                      if (a.userId === user.userId && b.userId !== user.userId) return -1;
+                      if (a.userId !== user.userId && b.userId === user.userId) return 1;
+                      return a.teamName.localeCompare(b.teamName);
+                    })
+                    .map((team) => (
+                      <li key={team.teamId} className="room-item">
+                        <span
+                          className="team-name"
+                          title={team.teamName}
+                          onClick={() => navigate(`/teams/${team.teamId}`)}
                         >
-                          수정
-                        </button>
-                        <button
-                          className="delete-btn-list "
-                          onClick={() => handleDeleteTeam(team.teamId)}
-                        >
-                          삭제
-                        </button>
-                      </div>
-                    </li>
-                  ))
+                          {team.teamName}
+                        </span>
+                        {/* 팀원 뱃지 */}
+                        {team.userId !== user.userId && (
+                          <span className="badge" title="팀 관리 권한 없음">팀원</span>
+                        )}
+
+                        {/* 방장만 관리 버튼 표시 */}
+                        {team.userId === user.userId && (
+                          <div className="group-btn">
+                            <button
+                              className="invite-btn-list"
+                              onClick={() => setInviteTeam(team)}
+                            >
+                              초대
+                            </button>
+                            <button
+                              className="edit-btn-list"
+                              onClick={() => {
+                                setSelectedTeam(team);
+                                setShowEditTeamModal(true);
+                              }}
+                            >
+                              수정
+                            </button>
+                            <button
+                              className="delete-btn-list"
+                              onClick={() => handleDeleteTeam(team.teamId)}
+                            >
+                              삭제
+                            </button>
+                          </div>
+                        )}
+                      </li>
+                    ))
                 ) : (
                   <li className="room-item muted">팀이 없습니다</li>
                 )}
@@ -246,7 +271,7 @@ export default function Header() {
                 onClick={() => setShowCreateTeamModal(true)}
                 className="create-room-button"
               >
-                ➕ 팀 방 만들기
+                팀 방 만들기
               </button>
             </div>
           )}
