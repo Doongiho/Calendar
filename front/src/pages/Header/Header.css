@@ -52,9 +52,10 @@ header {
   font-size: 3rem;
 }
 
-.delete-btn-list {
+.delete-btn-list,
+.rejected-btn {
   padding: 2px 4px;
-  background: #ffcd00;
+  background-color: #f44336;
   color: #fff;
   border-radius: 4px;
   cursor: pointer;
@@ -72,7 +73,8 @@ header {
   margin: auto 0;
 }
 
-.edit-btn-list {
+.edit-btn-list,
+.accepted-btn {
   padding: 2px 4px;
   background: #ffcd00;
   color: #fff;
@@ -135,7 +137,8 @@ header {
 .delete-btn-list:hover {
   background-color: #d32f2f;
 }
-.badge{
+
+.badge {
   position: absolute;
   top: -5px;
   right: -5px;
@@ -155,7 +158,6 @@ header {
   box-shadow: 0 0 0 1px white;
   font-size: 0.8rem !important;
 }
-
 
 @media (max-width: 767px) {
   .mo-header {
