@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react"; 
 import "./InviteModal.css";
-import { inviteUserToTeam, fetchInvitationsByTeam } from "../../api/teamApi";
+import { inviteUserToTeam, fetchInvitationsByTeam, cancelInvitation } from "../../api/teamApi";
 import { fetchPendingInvitations } from "../../api/invitationApi";
 import { useUser } from "../../contexts/UserContext";
 import { FaPaperPlane } from "react-icons/fa";
@@ -10,29 +10,33 @@ export default function InviteModal({ team, onClose, setInvitations  }) {
   const [invitedEmails, setInvitedEmails] = useState([]);
   const { user } = useUser();
 
-  const loadInvitedEmails = async () => {
+  const handleCancelInvitation = async (invitationId) => {
+    if (!window.confirm("이 초대를 취소하시겠습니까?")) return;
     try {
-      const data = await fetchInvitationsByTeam(team.teamId);
-      setInvitedEmails(data.map((inv) => inv.invitedUserEmail));
+      await cancelInvitation(team.teamId, invitationId);
+      alert("초대가 취소되었습니다.");
+      setInvitedEmails((prev) =>
+        prev.filter((inv) => inv.invitationId !== invitationId)
+      );
     } catch (error) {
-      console.error("초대 목록 불러오기 실패:", error);
+      console.error("초대 취소 실패:", error);
+      alert("초대 취소 중 오류가 발생했습니다.");
     }
   };
 
   useEffect(() => {
-    const fetchInitialInvitations = async () => {
-      if (!user?.userId) return;
+    const fetchTeamInvitations = async () => {
+      if (!team?.teamId) return;
       try {
-        const pending = await fetchPendingInvitations(user.userId);
-        setInvitations(pending);
-      } catch (err) {
-        console.error("초기 초대 목록 오류", err);
-        setInvitations([]);
+        const data = await fetchInvitationsByTeam(team.teamId);
+        setInvitedEmails(data);
+      } catch (error) {
+        console.error("팀 초대 목록 불러오기 실패:", error);
       }
     };
   
-    fetchInitialInvitations();
-  }, [user?.userId]);
+    fetchTeamInvitations();
+  }, [team?.teamId]);
 
   const handleInvite = async () => {
     if (!email || !email.includes("@")) {
@@ -40,10 +44,11 @@ export default function InviteModal({ team, onClose, setInvitations  }) {
       return;
     }
     try {
-      await inviteUserToTeam(team.teamId, email);
+      const result = await inviteUserToTeam(team.teamId, email);  
+      console.log("초대한 결과:", result);
+      setInvitedEmails((prev) => [...prev, result]);              
       setEmail("");
       alert("초대가 완료되었습니다.");
-      loadInvitedEmails(); 
     } catch (error) {
       console.error("초대 실패:", error);
       const serverMsg = error?.response?.data?.message;
@@ -72,7 +77,14 @@ export default function InviteModal({ team, onClose, setInvitations  }) {
           <strong>초대한 이메일 목록:</strong>
           <ul>
             {invitedEmails.length > 0 ? (
-              invitedEmails.map((mail, idx) => <li key={idx}>{mail}</li>)
+              invitedEmails.map(({ invitedUserEmail, invitationId }) => (
+                <li className="invitationList" key={invitationId}>
+                  {invitedUserEmail}
+                  <button onClick={() => handleCancelInvitation(invitationId)} className="cancel-btn">
+                    취소
+                  </button>
+                </li>
+              ))
             ) : (
               <li>초대보낸 사람이 없습니다.</li>
             )}

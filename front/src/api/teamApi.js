@@ -60,12 +60,13 @@ export const deleteTeam = async (teamId) => {
  * 특정 이메일로 팀 초대 전송
  * @param {number} teamId
  * @param {string} email
- * @returns {void}
+ * @returns {object} 
  */
 export const inviteUserToTeam = async (teamId, email) => {
-  return await axiosInstance.post(`/api/teams/${teamId}/invitations`, {
+  const res = await axiosInstance.post(`/api/teams/${teamId}/invitations`, {
     invitedUserEmail: email,
   });
+  return res.data.data;
 };
 
 /**
@@ -76,4 +77,15 @@ export const inviteUserToTeam = async (teamId, email) => {
 export const fetchInvitationsByTeam = async (teamId) => {
   const res = await axiosInstance.get(`/api/teams/${teamId}/invitations`);
   return res.data.data;
+};
+
+/**
+ * 특정 초대를 취소(삭제)합니다.
+ * @param {number} teamId - 초대가 속한 팀의 ID
+ * @param {number} invitationId - 취소할 초대의 ID
+ * @returns {Promise<void>} 삭제 요청 결과
+ */
+
+export const cancelInvitation = async (teamId, invitationId) => {
+  return await axiosInstance.delete(`/api/teams/${teamId}/invitations/${invitationId}`);
 };
