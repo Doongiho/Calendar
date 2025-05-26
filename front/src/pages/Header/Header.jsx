@@ -36,6 +36,7 @@ export default function Header() {
   const navigate = useNavigate();
   const menuRef = useRef(null);
   const userMenuRef = useRef(null);
+  const alarmRef = useRef(null);
 
   useEffect(() => {
     if (!user?.userId) return;
@@ -107,6 +108,8 @@ export default function Header() {
       setInvitations([]);
     }
 
+    setMenuOpen(false);
+    setUserMenuOpen(false);
     setShowInvitations((prev) => !prev);
   };
 
@@ -246,7 +249,7 @@ export default function Header() {
           )}
 
           {showInvitations && (
-            <div className="dropdown-menu" ref={userMenuRef}>
+            <div className="dropdown-menu" ref={alarmRef}>
               <div className="room-list-title">받은 초대</div>
               <ul className="room-list">
                 {invitations.length === 0 ? (
