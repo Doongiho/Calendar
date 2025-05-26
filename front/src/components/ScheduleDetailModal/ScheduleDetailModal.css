@@ -8,12 +8,13 @@
   position: relative;
 }
 
-.room-item{
+.room-item {
   display: flex;
   justify-content: space-between;
+  gap: 20px;
 }
 
-.delete-btn{
+.delete-btn {
   margin-top: 16px;
   width: 100%;
   padding: 8px 0;
@@ -36,7 +37,7 @@
   font-weight: bold;
   cursor: pointer;
 }
-.btn-group{
-    display: flex;
-    gap: 10px;
+.btn-group {
+  display: flex;
+  gap: 10px;
 }

@@ -25,6 +25,8 @@ header {
   display: flex;
   justify-content: space-between;
   width: 12%;
+  align-items: center;
+  gap: 20px;
 }
 
 .alarm {
@@ -84,12 +86,6 @@ header {
   margin: auto 0;
 }
 
-.group-btn {
-  display: flex;
-  justify-content: space-between;
-  gap: 10px;
-}
-
 .badge {
   background-color: #e0e0e0;
   color: #555;
@@ -107,11 +103,10 @@ header {
   text-overflow: ellipsis;
   vertical-align: middle;
 }
-
 .group-btn {
   display: flex;
-  gap: 5px;
-  margin-top: 4px;
+  justify-content: space-between;
+  gap: 10px;
 }
 
 .room-list {
