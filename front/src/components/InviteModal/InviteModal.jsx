@@ -5,7 +5,7 @@ import {
   fetchTeamInvitations,
   inviteUserToTeam,
 } from "../../api/invitationApi";
-import { fetchTeamMembers } from "../../api/teamApi";
+import { fetchTeamMembers, removeTeamMember } from "../../api/teamApi";
 import "./InviteModal.css";
 
 export default function InviteModal({ team, onClose }) {
@@ -84,6 +84,21 @@ export default function InviteModal({ team, onClose }) {
     }
   };
 
+  const handleRemoveMember = async (userId, email) => {
+    if (!window.confirm(`${email} 님을 정말 강퇴하시겠습니까?`)) return;
+
+    try {
+      await removeTeamMember(team.teamId, userId);
+      alert("강퇴되었습니다.");
+
+      const updatedMembers = await fetchTeamMembers(team.teamId);
+      setTeamMembers(updatedMembers);
+    } catch (error) {
+      console.error("팀원 강퇴 실패:", error);
+      alert("강퇴 처리 중 오류가 발생했습니다.");
+    }
+  };
+
   return (
     <div className="modal-backdrop">
       <div className="modal">
@@ -110,7 +125,7 @@ export default function InviteModal({ team, onClose }) {
           <ul>
             {pendingInvites.length > 0 ? (
               pendingInvites.map(({ invitedUserEmail, invitationId }) => (
-                <li key={invitationId}>
+                <li key={invitationId} className="canel-gub">
                   {invitedUserEmail}
                   <button
                     onClick={() => handleCancel(invitationId)}
@@ -131,8 +146,16 @@ export default function InviteModal({ team, onClose }) {
           <ul>
             {teamMembers.length > 0 ? (
               teamMembers.map((member) => (
-                <li key={member.userId}>
-                  {member.userName} ({member.userEmail})
+                <li key={member.userId} className="canel-gub">
+                  {member.userEmail}
+                  <button
+                    onClick={() =>
+                      handleRemoveMember(member.userId, member.userEmail)
+                    }
+                    className="kick-btn"
+                  >
+                    강퇴
+                  </button>
                 </li>
               ))
             ) : (

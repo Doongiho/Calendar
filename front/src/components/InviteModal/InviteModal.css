@@ -45,13 +45,18 @@
   display: flex;
   justify-content: space-between;
 }
-.cancel-btn {
+.cancel-btn,
+.kick-btn {
   margin-left: 10px;
   color: red;
   background: none;
   border: none;
   cursor: pointer;
   font-size: 0.9em;
+}
+.canel-gub {
+  display: flex;
+  justify-content: space-between;
 }
 
 .cancel-btn:hover {

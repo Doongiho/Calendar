@@ -64,3 +64,13 @@ export const fetchTeamMembers = async (teamId) => {
     throw error;
   }
 };
+
+/**
+ * 특정 팀에서 팀원 강퇴
+ * @param {number} teamId
+ * @param {number} userId
+ * @returns {void}
+ */
+export const removeTeamMember = async (teamId, userId) => {
+  return await axiosInstance.delete(`/api/teams/${teamId}/members/${userId}`);
+};
