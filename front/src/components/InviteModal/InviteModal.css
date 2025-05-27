@@ -21,7 +21,10 @@
   margin-top: 12px;
 }
 
-.input-div{
+.team-members {
+  margin-top: 10px;
+}
+.input-div {
   display: flex;
   margin-top: 20px;
 }
@@ -38,7 +41,7 @@
   color: #007bff;
 }
 
-.invitationList{
+.invitationList {
   display: flex;
   justify-content: space-between;
 }
