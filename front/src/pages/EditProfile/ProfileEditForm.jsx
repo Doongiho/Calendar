@@ -14,47 +14,54 @@ export default function ProfileEditForm({ setIsEditing }) {
   const [gender, setGender] = useState(user?.gender === 0 ? '남성' : '여성');
 
   const handleSubmit = async (e) => {
-  e.preventDefault();
-
-  if (password !== confirmPassword) {
-    alert('비밀번호가 일치하지 않습니다.');
-    return;
-  }
-
-  const genderNumber = gender === '남성' ? 0 : 1;
-  const originalEmail = user?.email;
-
-  const updatedUserData = {
-    userId: user.userId,
-    name,
-    email,
-    gender: genderNumber,
-    pwd: password || '', // 서버는 pwd 필드 필요
-  };
-
-  try {
-    const updatedUser = await updateUserInfo(updatedUserData);
-
-    const emailChanged = originalEmail !== updatedUser.email;
-    const pwdChanged = password && password !== '';
-
-    if (emailChanged || pwdChanged) {
-      alert('이메일 또는 비밀번호가 변경되어 로그아웃됩니다.');
-      localStorage.removeItem('user');
-      setUser(null);
-      navigate('/');
-    } else {
-      setUser(updatedUser);
-      localStorage.setItem('user', JSON.stringify(updatedUser));
-      navigate(`/MyCalendar/${updatedUser.userId}`, {
-        state: { user: updatedUser },
-      });
+    e.preventDefault();
+  
+    if (password !== confirmPassword) {
+      alert('비밀번호가 일치하지 않습니다.');
+      return;
     }
-  } catch (error) {
-    console.error('회원정보 수정 실패:', error);
-    alert('회원정보 수정에 실패했습니다. 다시 시도해주세요.');
-  }
-};
+  
+    const genderNumber = gender === '남성' ? 0 : 1;
+  
+    const updatedUserData = {
+      userId: user.userId,
+      name,
+      email,
+      gender: genderNumber,
+      pwd: password || '',
+    };
+  
+    try {
+      const updatedUser = await updateUserInfo(updatedUserData);
+  
+      // ✅ 이름, 이메일, 성별, 비밀번호 중 하나라도 변경되었으면 로그아웃 처리
+      const nameChanged = name !== user.name;
+      const emailChanged = email !== user.email;
+      const genderChanged = genderNumber !== user.gender;
+      const passwordChanged = password.length > 0;
+  
+      const sensitiveChanged = nameChanged || emailChanged || genderChanged || passwordChanged;
+  
+      if (sensitiveChanged) {
+        // 로그아웃 처리
+        localStorage.removeItem('user');
+        setUser(null);
+        alert('회원정보가 변경되어 다시 로그인해주세요.');
+        navigate('/');
+      } else {
+        // 정보 변경만 되고, 로그인 유지 (사용하지 않겠지만 대비)
+        setUser(updatedUser);
+        localStorage.setItem('user', JSON.stringify(updatedUser));
+        navigate(`/MyCalendar/${updatedUser.userId}`, {
+          state: { user: updatedUser },
+        });
+      }
+    } catch (error) {
+      console.error('회원정보 수정 실패:', error);
+      alert('회원정보 수정에 실패했습니다. 다시 시도해주세요.');
+    }
+  };
+  
 
 
   return (
