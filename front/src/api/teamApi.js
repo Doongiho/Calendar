@@ -60,7 +60,7 @@ export const deleteTeam = async (teamId) => {
  * 특정 이메일로 팀 초대 전송
  * @param {number} teamId
  * @param {string} email
- * @returns {object} 
+ * @returns {object}
  */
 export const inviteUserToTeam = async (teamId, email) => {
   const res = await axiosInstance.post(`/api/teams/${teamId}/invitations`, {
@@ -75,8 +75,13 @@ export const inviteUserToTeam = async (teamId, email) => {
  * @returns {array} 초대 정보 목록
  */
 export const fetchInvitationsByTeam = async (teamId) => {
-  const res = await axiosInstance.get(`/api/teams/${teamId}/invitations`);
-  return res.data.data;
+  try {
+    const res = await axiosInstance.get(`/api/teams/${teamId}/invitations`);
+    return res.data.data;
+  } catch (error) {
+    console.error("팀 초대 목록 조회 실패:", error);
+    throw error; // 에러 발생 시 호출한 곳에 에러 전달
+  }
 };
 
 /**
@@ -87,5 +92,7 @@ export const fetchInvitationsByTeam = async (teamId) => {
  */
 
 export const cancelInvitation = async (teamId, invitationId) => {
-  return await axiosInstance.delete(`/api/teams/${teamId}/invitations/${invitationId}`);
+  return await axiosInstance.delete(
+    `/api/teams/${teamId}/invitations/${invitationId}`
+  );
 };

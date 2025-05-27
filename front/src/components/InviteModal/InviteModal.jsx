@@ -1,23 +1,27 @@
-import React, { useState, useEffect } from "react"; 
-import "./InviteModal.css";
-import { inviteUserToTeam, fetchInvitationsByTeam, cancelInvitation } from "../../api/teamApi";
-import { fetchPendingInvitations } from "../../api/invitationApi";
-import { useUser } from "../../contexts/UserContext";
+import { useEffect, useState } from "react";
 import { FaPaperPlane } from "react-icons/fa";
+import { fetchPendingInvitations } from "../../api/invitationApi";
+import { cancelInvitation, inviteUserToTeam } from "../../api/teamApi";
+import { useUser } from "../../contexts/UserContext";
+import "./InviteModal.css";
 
-export default function InviteModal({ team, onClose, setInvitations  }) {
+export default function InviteModal({ team, onClose, setInvitations }) {
   const [email, setEmail] = useState("");
   const [invitedEmails, setInvitedEmails] = useState([]);
   const { user } = useUser();
 
   const handleCancelInvitation = async (invitationId) => {
     if (!window.confirm("이 초대를 취소하시겠습니까?")) return;
+
     try {
       await cancelInvitation(team.teamId, invitationId);
       alert("초대가 취소되었습니다.");
       setInvitedEmails((prev) =>
         prev.filter((inv) => inv.invitationId !== invitationId)
       );
+
+      const updatedInvitations = await fetchPendingInvitations(user.userId);
+      setInvitations(updatedInvitations);
     } catch (error) {
       console.error("초대 취소 실패:", error);
       alert("초대 취소 중 오류가 발생했습니다.");
@@ -25,18 +29,19 @@ export default function InviteModal({ team, onClose, setInvitations  }) {
   };
 
   useEffect(() => {
-    const fetchTeamInvitations = async () => {
-      if (!team?.teamId) return;
+    const fetchPendingInvitationsList = async () => {
+      if (!user?.userId) return;
+
       try {
-        const data = await fetchInvitationsByTeam(team.teamId);
+        const data = await fetchPendingInvitations(user.userId);
         setInvitedEmails(data);
       } catch (error) {
-        console.error("팀 초대 목록 불러오기 실패:", error);
+        console.error("대기 중인 초대 목록 불러오기 실패:", error);
       }
     };
-  
-    fetchTeamInvitations();
-  }, [team?.teamId]);
+
+    fetchPendingInvitationsList();
+  }, [user?.userId]);
 
   const handleInvite = async () => {
     if (!email || !email.includes("@")) {
@@ -44,9 +49,10 @@ export default function InviteModal({ team, onClose, setInvitations  }) {
       return;
     }
     try {
-      const result = await inviteUserToTeam(team.teamId, email);  
+      const result = await inviteUserToTeam(team.teamId, email);
       console.log("초대한 결과:", result);
-      setInvitedEmails((prev) => [...prev, result]);              
+      const updatedInvitations = await fetchPendingInvitations(user.userId);
+      setInvitedEmails(updatedInvitations);
       setEmail("");
       alert("초대가 완료되었습니다.");
     } catch (error) {
@@ -59,9 +65,12 @@ export default function InviteModal({ team, onClose, setInvitations  }) {
   return (
     <div className="modal-backdrop">
       <div className="modal">
-        <button className="close-btn" onClick={onClose} aria-label="닫기">×</button>
+        <button className="close-btn" onClick={onClose} aria-label="닫기">
+          ×
+        </button>
         <h3>팀 초대</h3>
         <h3>{team.teamName}</h3>
+
         <div className="input-div">
           <input
             type="email"
@@ -69,24 +78,32 @@ export default function InviteModal({ team, onClose, setInvitations  }) {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
-          <button className="icon-button" onClick={handleInvite} title="초대하기">
+          <button
+            className="icon-button"
+            onClick={handleInvite}
+            title="초대하기"
+          >
             <FaPaperPlane />
           </button>
         </div>
+
         <div className="invite-list">
-          <strong>초대한 이메일 목록:</strong>
+          <strong>대기 중인 초대 목록:</strong>
           <ul>
             {invitedEmails.length > 0 ? (
               invitedEmails.map(({ invitedUserEmail, invitationId }) => (
                 <li className="invitationList" key={invitationId}>
                   {invitedUserEmail}
-                  <button onClick={() => handleCancelInvitation(invitationId)} className="cancel-btn">
+                  <button
+                    onClick={() => handleCancelInvitation(invitationId)}
+                    className="cancel-btn"
+                  >
                     취소
                   </button>
                 </li>
               ))
             ) : (
-              <li>초대보낸 사람이 없습니다.</li>
+              <li>대기 중인 초대가 없습니다.</li>
             )}
           </ul>
         </div>
