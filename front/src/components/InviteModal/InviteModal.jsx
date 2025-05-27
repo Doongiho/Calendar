@@ -43,11 +43,32 @@ export default function InviteModal({ team, onClose, setInvitations }) {
     fetchPendingInvitationsList();
   }, [user?.userId]);
 
+  const checkIfUserIsMember = async (email) => {
+    try {
+      const response = await fetch(`/api/teams/${team.teamId}/members`);
+      const teamMembers = await response.json();
+
+      const isMember = teamMembers.some((member) => member.email === email);
+      return isMember;
+    } catch (error) {
+      console.error("팀 멤버 조회 실패:", error);
+      return false;
+    }
+  };
+
   const handleInvite = async () => {
     if (!email || !email.includes("@")) {
       alert("올바른 이메일을 입력하세요.");
       return;
     }
+
+    // 사용자가 이미 팀의 멤버인지 확인
+    const isMember = await checkIfUserIsMember(email);
+    if (isMember) {
+      alert("이 사용자는 이미 팀의 멤버입니다.");
+      return;
+    }
+
     try {
       const result = await inviteUserToTeam(team.teamId, email);
       console.log("초대한 결과:", result);
@@ -70,7 +91,6 @@ export default function InviteModal({ team, onClose, setInvitations }) {
         </button>
         <h3>팀 초대</h3>
         <h3>{team.teamName}</h3>
-
         <div className="input-div">
           <input
             type="email"
