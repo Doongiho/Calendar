@@ -6,6 +6,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -24,12 +26,17 @@ public class TeamSchedule {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long teamScheduleId;
 
-    @ManyToOne
-    @JoinColumn(name = "team_id", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "team_id", nullable = false, foreignKey = @ForeignKey(
+            name = "fk_teamschedule_team",
+            foreignKeyDefinition = "FOREIGN KEY(team_id) REFERENCES team(team_id) ON DELETE CASCADE"))
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Team team;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", foreignKey = @ForeignKey(
+            name = "fk_teamschedule_user",
+            foreignKeyDefinition = "FOREIGN KEY(user_id) REFERENCES users(user_id) ON DELETE SET NULL"))
     private User user;
 
     @Column(nullable = false)

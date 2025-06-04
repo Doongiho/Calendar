@@ -8,9 +8,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Entity
@@ -37,6 +35,32 @@ public class User implements UserDetails {
 
     @Column(nullable = false)
     private int gender;
+
+    // 개인 스케줄
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<Schedule> schedules = new ArrayList<>();
+
+    // 유저가 생성한 팀 (팀 생성자)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<Team> teams = new ArrayList<>();
+
+    // 유저가 보낸 초대
+    @OneToMany(mappedBy = "inviter", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<Invitation> invitationsSent = new ArrayList<>();
+
+    // 유저가 받은 초대
+    @OneToMany(mappedBy = "invitedUser", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<Invitation> invitationsReceived = new ArrayList<>();
+
+    // 유저가 팀에 속한 멤버십 정보
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<TeamMember> teamMemberships = new ArrayList<>();
+
 
     //  사용자 권한 목록 (별도 테이블 생성)
     @ElementCollection(fetch = FetchType.EAGER)

@@ -5,6 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 import org.springframework.data.annotation.CreatedDate;
 
 import java.time.LocalDateTime;
@@ -24,8 +26,11 @@ public class Team {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long teamId;
 
-    @ManyToOne  //  1 유저 M 팀
-    @JoinColumn(name = "user_id", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "user_id", nullable = false, foreignKey = @ForeignKey(
+            name = "fk_team_creator",
+            foreignKeyDefinition = "FOREIGN KEY(user_id) REFERENCES users(user_id) ON DELETE CASCADE"))
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private User user;  //  팀 생성자
 
     @Column(length = 30, nullable = false)

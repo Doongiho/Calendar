@@ -6,6 +6,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import java.time.LocalDateTime;
 
@@ -22,16 +24,25 @@ public class Invitation {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long invitationsId;
 
-    @ManyToOne
-    @JoinColumn(name = "team_id", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "team_id", nullable = false, foreignKey = @ForeignKey(
+            name = "fk_invitation_team",
+            foreignKeyDefinition = "FOREIGN KEY(team_id) REFERENCES team(team_id) ON DELETE CASCADE"))
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Team team;
 
-    @ManyToOne
-    @JoinColumn(name = "inviter_id", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "inviter_id", nullable = false, foreignKey = @ForeignKey(
+            name = "fk_invitation_inviter",
+            foreignKeyDefinition = "FOREIGN KEY(inviter_id) REFERENCES users(user_id) ON DELETE CASCADE"))
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private User inviter;
 
-    @ManyToOne
-    @JoinColumn(name = "invited_id", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "invited_id", nullable = false, foreignKey = @ForeignKey(
+            name = "fk_invitation_invited",
+            foreignKeyDefinition = "FOREIGN KEY(invited_id) REFERENCES users(user_id) ON DELETE CASCADE"))
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private User invitedUser;
 
     @Column(nullable = false)
