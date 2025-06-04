@@ -48,6 +48,7 @@ export default function LoginPage() {
         userId: data.userId,
         name: data.name || data.email,
         email: data.email,
+        gender: data.gender, 
         token: token, 
       };
   
