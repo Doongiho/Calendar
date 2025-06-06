@@ -19,17 +19,22 @@ import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/api/team-schedules")
-public class TeamScheduleController implements TeamScheduleMapper{
+public class TeamScheduleController implements TeamScheduleMapper {
 
     @Autowired
     private TeamScheduleService teamScheduleService;
     @Autowired
     private UserRepository userRepository;
 
-    //  팀 스케줄 생성
+    // 팀 스케줄 생성
     @PostMapping("")
-    @PreAuthorize("@teamMemberService.isTeamMember(#teamScheduleDto.teamId, principal.userId)")
-    public ResponseEntity<ApiResponse<TeamScheduleDto>> createTeamSchedule(@RequestBody TeamScheduleDto teamScheduleDto) {
+    @PreAuthorize("@teamMemberService.isTeamMember(#teamScheduleDto.teamId, #teamScheduleDto.userId)")
+
+    public ResponseEntity<ApiResponse<TeamScheduleDto>> createTeamSchedule(
+            @RequestBody TeamScheduleDto teamScheduleDto) {
+        System.out.println("✅ 컨트롤러 진입함");
+        System.out.println("➡ userId = " + teamScheduleDto.getUserId());
+        System.out.println("➡ teamId = " + teamScheduleDto.getTeamId());
         try {
             User user = userRepository.findById(teamScheduleDto.getUserId())
                     .orElseThrow(() -> new IllegalArgumentException("User not found"));
@@ -57,9 +62,10 @@ public class TeamScheduleController implements TeamScheduleMapper{
         }
     }
 
-    //  팀 스케줄 조회 (전체)
+    // 팀 스케줄 조회 (전체)
     @GetMapping("/team/{teamId}")
-    public ResponseEntity<ApiResponse<List<TeamScheduleDto>>> getTeamSchedulesByTeam(@PathVariable(name = "teamId") Long teamId) {
+    public ResponseEntity<ApiResponse<List<TeamScheduleDto>>> getTeamSchedulesByTeam(
+            @PathVariable(name = "teamId") Long teamId) {
         try {
             List<TeamSchedule> teamSchedules = teamScheduleService.getTeamSchedulesByTeam(teamId);
             List<TeamScheduleDto> teamScheduleDtos = teamSchedules.stream()
@@ -82,9 +88,10 @@ public class TeamScheduleController implements TeamScheduleMapper{
         }
     }
 
-    //  팀 스케줄 조회 (단일 -> 스케줄 id 별로 조회)
+    // 팀 스케줄 조회 (단일 -> 스케줄 id 별로 조회)
     @GetMapping("/{teamScheduleId}")
-    public ResponseEntity<ApiResponse<TeamScheduleDto>> getTeamScheduleById(@PathVariable(name = "teamScheduleId") Long teamScheduleId) {
+    public ResponseEntity<ApiResponse<TeamScheduleDto>> getTeamScheduleById(
+            @PathVariable(name = "teamScheduleId") Long teamScheduleId) {
         try {
             TeamSchedule teamSchedule = teamScheduleService.getTeamScheduleById(teamScheduleId)
                     .orElseThrow(() -> new IllegalArgumentException("Team schedule not found"));
@@ -107,11 +114,12 @@ public class TeamScheduleController implements TeamScheduleMapper{
         }
     }
 
-    //  팀 스케줄 수정
+    // 팀 스케줄 수정
     @PutMapping("/{teamScheduleId}")
     @PreAuthorize("@teamMemberService.isTeamMember(#teamScheduleDto.teamId, principal.userId)")
-    public ResponseEntity<ApiResponse<TeamScheduleDto>> updateTeamSchedule(@PathVariable(name = "teamScheduleId") Long teamScheduleId,
-                                                                           @RequestBody TeamScheduleDto teamScheduleDto) {
+    public ResponseEntity<ApiResponse<TeamScheduleDto>> updateTeamSchedule(
+            @PathVariable(name = "teamScheduleId") Long teamScheduleId,
+            @RequestBody TeamScheduleDto teamScheduleDto) {
         try {
             TeamSchedule existingSchedule = teamScheduleService.getTeamScheduleById(teamScheduleId)
                     .orElseThrow(() -> new IllegalArgumentException("Team schedule not found"));
@@ -141,9 +149,10 @@ public class TeamScheduleController implements TeamScheduleMapper{
         }
     }
 
-    //  팀 스케줄 삭제
+    // 팀 스케줄 삭제
     @DeleteMapping("/{teamScheduleId}")
-    public  ResponseEntity<ApiResponse<Void>> deleteTeamSchedule(@PathVariable(name = "teamScheduleId") Long teamScheduleId) {
+    public ResponseEntity<ApiResponse<Void>> deleteTeamSchedule(
+            @PathVariable(name = "teamScheduleId") Long teamScheduleId) {
         try {
             teamScheduleService.deleteTeamSchedule(teamScheduleId);
 
