@@ -9,8 +9,19 @@ const colorMap = {
   PURPLE: "#9c27b0",
 };
 
+const formatDateTime = (isoString) => {
+  const date = new Date(isoString);
+  const yyyy = date.getFullYear();
+  const mm = String(date.getMonth() + 1).padStart(2, "0");
+  const dd = String(date.getDate()).padStart(2, "0");
+  const hh = String(date.getHours()).padStart(2, "0");
+  const min = String(date.getMinutes()).padStart(2, "0");
+  return `${yyyy}-${mm}-${dd} ${hh}:${min}`;
+};
+
 const ScheduleDetailModal = ({ schedule, onClose, onEdit, onDelete }) => {
   if (!schedule) return null;
+
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div
@@ -21,14 +32,19 @@ const ScheduleDetailModal = ({ schedule, onClose, onEdit, onDelete }) => {
           ×
         </button>
         <h3 className="schedule-title">{schedule.title}</h3>
+
         <p className="schedule-row">
-          <b>기간:</b> {schedule.startDate} {schedule.startTime} ~{" "}
-          {schedule.endDate} {schedule.endTime}
+          <b>시작일자:</b> {formatDateTime(schedule.startDate)}
         </p>
+        <p className="schedule-row">
+          <b>종료일자:</b> {formatDateTime(schedule.endDate)}
+        </p>
+
         <p className="schedule-row">
           <b>설명:</b>{" "}
           {schedule.description || <span className="schedule-empty">없음</span>}
         </p>
+
         <div className="schedule-row">
           <b>색상:</b>
           <span
@@ -43,6 +59,7 @@ const ScheduleDetailModal = ({ schedule, onClose, onEdit, onDelete }) => {
             {schedule.color}
           </span>
         </div>
+
         <div className="btn-group">
           <button
             className="edit-btn"

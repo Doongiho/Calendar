@@ -7,14 +7,32 @@ export default function ScheduleForm({
   onSubmit,
   schedule,
 }) {
+  const extractDate = (iso) => {
+    if (!iso) return initialDate;
+    const dateObj = new Date(iso);
+    if (isNaN(dateObj.getTime())) return iso.split("T")[0];
+    return dateObj.toISOString().split("T")[0];
+  };
+  
+  const extractTime = (iso) => {
+    if (!iso) return "09:00";
+    const dateObj = new Date(iso);
+    if (isNaN(dateObj.getTime())) return "09:00";
+    return dateObj.toTimeString().slice(0, 5); 
+  };
+  
+  
+  
   const [title, setTitle] = useState(schedule?.title || "");
-  const [startDate, setStartDate] = useState(
-    schedule?.startDate || initialDate
+  const [startDate, setStartDate] = useState(extractDate(schedule?.startDate));
+  const [startTime, setStartTime] = useState(
+    schedule?.startTime || extractTime(schedule?.startDate)
   );
-  const [startTime, setStartTime] = useState(schedule?.startTime || "09:00");
-  const [endDate, setEndDate] = useState(schedule?.endDate || initialDate);
-  const [endTime, setEndTime] = useState(schedule?.endTime || "18:00");
-  const [place, setPlace] = useState(schedule?.place || "");
+  const [endDate, setEndDate] = useState(extractDate(schedule?.endDate));
+  const [endTime, setEndTime] = useState(
+    schedule?.endTime || extractTime(schedule?.endDate)
+  );
+  
   const [color, setColor] = useState(schedule?.color || "BLUE");
   const [description, setDescription] = useState(schedule?.description || "");
 
@@ -27,20 +45,21 @@ export default function ScheduleForm({
 
     const startDateTime = `${startDate}T${startTime}`;
     const endDateTime = `${endDate}T${endTime}`;
+    
     onSubmit({
       ...schedule,
       title,
-      startDate,
-      startTime,
-      startDateTime,
-      endDate,
-      endTime,
-      endDateTime,
-      place,
+      startDate: `${startDate}T${startTime}`,
+      endDate: `${endDate}T${endTime}`,
+      startTime, 
+      endTime, 
       color,
       description,
     });
     onClose();
+    
+    console.log("startDateTime", startDateTime); 
+    console.log("endDateTime", endDateTime);
   };
 
   return (
