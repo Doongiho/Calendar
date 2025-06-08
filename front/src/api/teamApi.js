@@ -27,8 +27,11 @@ export const createTeam = async (data) => {
  */
 export const fetchTeamsByUser = async (userId) => {
   const res = await axiosInstance.get(`/api/teams/user/${userId}`);
-  return res.data.data;
+  const teamList = res.data?.data || [];
+  console.log("📦 teams:", teamList);
+  return teamList;
 };
+
 
 /**
  * 팀 정보 수정

@@ -241,7 +241,7 @@ export default function Header() {
             <div className="alarm" onClick={handleAlarmClick}>
               <span className="material-symbols-outlined">notifications</span>
               {invitations.length > 0 && (
-                <span className="badge">{invitations.length}</span>
+                <span className="invite-btn-list">{invitations.length}</span>
               )}
             </div>
             <div className="mypage-box">
@@ -321,64 +321,65 @@ export default function Header() {
           <div className="dropdown-menu" ref={menuRef}>
             <div className="room-list-title">팀 캘린더 목록</div>
             <ul className="room-list">
-              {teams.length > 0 ? (
-                teams
-                  .filter(
-                    (team) =>
-                      team.userId === user.userId ||
-                      team.invitationStatus?.toUpperCase() === "ACCEPTED"
-                  )
-                  .sort((a, b) =>
-                    a.userId === user.userId && b.userId !== user.userId
-                      ? -1
-                      : a.userId !== user.userId && b.userId === user.userId
-                      ? 1
-                      : a.teamName.localeCompare(b.teamName)
-                  )
-                  .map((team) => (
-                    <li key={team.teamId} className="room-item">
-                      <span
-                        className="team-name"
-                        title={team.teamName}
-                        onClick={() => navigate(`/teams/${team.teamId}`)}
-                      >
-                        {team.teamName}
-                      </span>
-                      {team.userId !== user.userId && (
-                        <span className="badge">팀원</span>
-                      )}
-                      {team.userId === user.userId && (
-                        <div className="group-btn">
-                          <button
-                            className="invite-btn-list"
-                            onClick={() => setInviteTeam(team)}
-                          >
-                            초대
-                          </button>
-                          <button
-                            className="edit-btn-list"
-                            onClick={() => {
-                              setSelectedTeam(team);
-                              setShowEditTeamModal(true);
-                            }}
-                          >
-                            수정
-                          </button>
-                          <button
-                            className="delete-btn-list"
-                            onClick={() => handleDeleteTeam(team.teamId)}
-                          >
-                            삭제
-                          </button>
-                        </div>
-                      )}
-                    </li>
-                  ))
-              ) : (
-                <li className="room-item muted">팀이 없습니다</li>
-              )}
-            </ul>
+            {teams.length > 0 ? (
+              teams.filter((team) => {
+                return (
+                  team.userId === user.userId ||        
+                  team.isMember === true ||           
+                  team.members?.some?.((m) => m.userId === user.userId) || 
+                  true                      
+                );
+              })
+            .sort((a, b) =>
+              a.userId === user.userId && b.userId !== user.userId
+                ? -1
+                : a.userId !== user.userId && b.userId === user.userId
+                ? 1
+                : a.teamName.localeCompare(b.teamName)
+            )
+            .map((team) => (
+              <li key={team.teamId} className="room-item">
+                <span
+                  className="team-name"
+                  title={team.teamName}
+                  onClick={() => navigate(`/teams/${team.teamId}`)}
+                >
+                  {team.teamName}
+                </span>
 
+                {team.userId === user.userId ? (
+                  <div className="group-btn">
+                    <button
+                      className="invite-btn-list"
+                      onClick={() => setInviteTeam(team)}
+                    >
+                      초대
+                    </button>
+                    <button
+                      className="edit-btn-list"
+                      onClick={() => {
+                        setSelectedTeam(team);
+                        setShowEditTeamModal(true);
+                      }}
+                    >
+                      수정
+                    </button>
+                    <button
+                      className="delete-btn-list"
+                      onClick={() => handleDeleteTeam(team.teamId)}
+                    >
+                      삭제
+                    </button>
+                  </div>
+                ) : (
+                      <span className="invite-btn-list">팀원</span>
+                )}
+              </li>
+            ))
+        ) : (
+          <li className="room-item muted">팀이 없습니다</li>
+        )}
+            </ul>
             {location.pathname.startsWith("/teams/") && (
               <>
                 <hr />
