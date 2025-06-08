@@ -37,6 +37,10 @@
   display: inline-block;
 }
 
+.team-mode .day-header {
+  background-color: #36879a;
+}
+
 .day-header {
   text-align: center;
   font-weight: 600;

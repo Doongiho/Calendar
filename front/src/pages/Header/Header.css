@@ -10,6 +10,7 @@ header {
   position: relative;
 }
 
+
 .mo-header {
   justify-content: space-between;
   width: 90%;
@@ -112,6 +113,7 @@ header {
 .room-list {
   padding: 10px 5px;
   min-width: 200px;
+  cursor: pointer;
 }
 
 .invite-btn-list,

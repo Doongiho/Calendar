@@ -154,7 +154,7 @@ const Calendar = ({ onDateSelect, teamId }) => {
   
 
   return (
-    <div className="calendar-container">
+    <div className={`calendar-container ${teamId ? "team-mode" : ""}`}>
       <div className="calendar-nav">
         <i className="prev bx bx-chevron-left" onClick={() => handleNavigationClick(-1)}></i>
         <div className="calendar-title">
