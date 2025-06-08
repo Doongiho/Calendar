@@ -82,6 +82,7 @@ const ScheduleDetailModal = ({ schedule, onClose, onEdit, onDelete, teamId, memb
               e.stopPropagation();
               if (window.confirm("정말 삭제하시겠습니까?")) {
                 onDelete && onDelete(schedule);
+                onClose && onClose();
               }
             }}
           >
