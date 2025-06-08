@@ -19,15 +19,17 @@ const formatDateTime = (isoString) => {
   return `${yyyy}-${mm}-${dd} ${hh}:${min}`;
 };
 
-const ScheduleDetailModal = ({ schedule, onClose, onEdit, onDelete }) => {
+const ScheduleDetailModal = ({ schedule, onClose, onEdit, onDelete, teamId, memberMap }) => {
   if (!schedule) return null;
+
+  const writerName =
+  teamId && schedule.userId
+    ? memberMap?.[Number(schedule.userId)] || `사용자#${schedule.userId}`
+    : null;
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div
-        className="schedule-detail-modal"
-        onClick={(e) => e.stopPropagation()}
-      >
+      <div className="schedule-detail-modal" onClick={(e) => e.stopPropagation()}>
         <button className="close-btn" onClick={onClose} aria-label="닫기">
           ×
         </button>
@@ -59,7 +61,11 @@ const ScheduleDetailModal = ({ schedule, onClose, onEdit, onDelete }) => {
             {schedule.color}
           </span>
         </div>
-
+        {writerName && (
+          <p className="schedule-row">
+            <b>작성자:</b> {writerName}
+          </p>
+        )}
         <div className="btn-group">
           <button
             className="edit-btn"
@@ -86,5 +92,6 @@ const ScheduleDetailModal = ({ schedule, onClose, onEdit, onDelete }) => {
     </div>
   );
 };
+
 
 export default ScheduleDetailModal;

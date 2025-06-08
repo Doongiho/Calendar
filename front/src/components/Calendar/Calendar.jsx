@@ -3,7 +3,7 @@ import "./Calendar.css";
 import ScheduleForm from "../ScheduleForm/ScheduleForm";
 import ScheduleDetailModal from "../ScheduleDetailModal/ScheduleDetailModal";
 import {
-  fetchUserSchedules,      
+  fetchUserSchedules,
   createSchedule,
   updateSchedule,
   deleteSchedule,
@@ -12,16 +12,17 @@ import {
   fetchTeamSchedules,
   createTeamSchedule,
   updateTeamSchedule,
-  deleteTeamSchedule
+  deleteTeamSchedule,
 } from "../../api/teamScheduleApi";
+import { fetchTeamMembers } from "../../api/teamApi";
 import { useUser } from "../../contexts/UserContext";
 
 const Calendar = ({ onDateSelect, teamId }) => {
-  const { user } = useUser(); 
+  const { user } = useUser();
   const userId = user?.userId;
   const monthNames = [
     "1월", "2월", "3월", "4월", "5월", "6월",
-    "7월", "8월", "9월", "10월", "11월", "12월"
+    "7월", "8월", "9월", "10월", "11월", "12월",
   ];
   const dayNames = ["일", "월", "화", "수", "목", "금", "토"];
 
@@ -31,6 +32,7 @@ const Calendar = ({ onDateSelect, teamId }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedSchedule, setSelectedSchedule] = useState(null);
   const [editingSchedule, setEditingSchedule] = useState(null);
+  const [teamMembers, setTeamMembers] = useState([]);
 
   const currentYear = currentDate.getFullYear();
   const currentMonth = currentDate.getMonth();
@@ -40,13 +42,17 @@ const Calendar = ({ onDateSelect, teamId }) => {
       fetchTeamSchedules(teamId)
         .then((res) => setSchedules(res.data))
         .catch((err) => console.error("팀 일정 로드 실패:", err));
+  
+      fetchTeamMembers(teamId)
+        .then((res) => {
+          setTeamMembers(res.data || res);
+        });
     } else if (userId) {
       fetchUserSchedules(userId)
         .then((res) => setSchedules(res.data))
         .catch((err) => console.error("개인 일정 로드 실패:", err));
     }
   }, [userId, teamId]);
-  
 
   const formattedDate = (date) => {
     const pad = (n) => (n < 10 ? `0${n}` : `${n}`);
@@ -100,9 +106,9 @@ const Calendar = ({ onDateSelect, teamId }) => {
   const handleDelete = (schedule) => {
     const id = schedule.scheduleId || schedule.id;
     if (!id) return alert("삭제할 일정 ID가 없습니다.");
-  
+
     const deleteFn = teamId ? deleteTeamSchedule : deleteSchedule;
-  
+
     deleteFn(id)
       .then(() => {
         setSchedules((prev) => prev.filter((s) => (s.scheduleId || s.id) !== id));
@@ -119,53 +125,51 @@ const Calendar = ({ onDateSelect, teamId }) => {
       userId: user?.userId,
       teamId: teamId ? Number(teamId) : undefined,
     };
-  
+
     if (schedule.scheduleId) {
       const updateFn = teamId ? updateTeamSchedule : updateSchedule;
-      updateFn(schedule.scheduleId, payload)
-        .then((res) => {
-          const updated = {
-            ...res.data,
-            id: res.data.scheduleId,
-            startDate: res.data.startDate.slice(0, 10),
-            endDate: res.data.endDate.slice(0, 10)
-          };
-          setSchedules((prev) =>
-            prev.map((s) => (s.scheduleId === updated.id ? updated : s))
-          );
-        });
+      updateFn(schedule.scheduleId, payload).then((res) => {
+        const updated = {
+          ...res.data,
+          id: res.data.scheduleId,
+          startDate: res.data.startDate.slice(0, 10),
+          endDate: res.data.endDate.slice(0, 10),
+        };
+        setSchedules((prev) =>
+          prev.map((s) => (s.scheduleId === updated.id ? updated : s))
+        );
+      });
     } else {
       const createFn = teamId ? createTeamSchedule : createSchedule;
-      createFn(payload)
-        .then((res) => {
-          const created = {
-            ...res.data,
-            id: res.data.scheduleId,
-            startDate: res.data.startDate.slice(0, 10),
-            endDate: res.data.endDate.slice(0, 10)
-          };
-          setSchedules((prev) => [...prev, created]);
-        });
+      createFn(payload).then((res) => {
+        const created = {
+          ...res.data,
+          id: res.data.scheduleId,
+          startDate: res.data.startDate.slice(0, 10),
+          endDate: res.data.endDate.slice(0, 10),
+        };
+        setSchedules((prev) => [...prev, created]);
+      });
     }
   };
-  
-  
-  
-  
 
   return (
     <div className={`calendar-container ${teamId ? "team-mode" : ""}`}>
       <div className="calendar-nav">
         <i className="prev bx bx-chevron-left" onClick={() => handleNavigationClick(-1)}></i>
         <div className="calendar-title">
-          <h2>{currentYear}년 {monthNames[currentMonth]}</h2>
+          <h2>
+            {currentYear}년 {monthNames[currentMonth]}
+          </h2>
         </div>
         <i className="next bx bx-chevron-right" onClick={() => handleNavigationClick(1)}></i>
       </div>
 
       <div className="calendar-grid">
         {dayNames.map((dayName) => (
-          <div key={dayName} className="day-header">{dayName}</div>
+          <div key={dayName} className="day-header">
+            {dayName}
+          </div>
         ))}
         {eachCalendarDates().map((date) => (
           <div
@@ -175,11 +179,12 @@ const Calendar = ({ onDateSelect, teamId }) => {
           >
             <div className="date-number">{date.getDate()}</div>
             <div className="todo-list-wrap">
-              {schedules.filter(
-                (s) =>
-                  formattedDate(new Date(s.startDate)) <= formattedDate(date) &&
-                  formattedDate(new Date(s.endDate)) >= formattedDate(date)
-              )
+              {schedules
+                .filter(
+                  (s) =>
+                    formattedDate(new Date(s.startDate)) <= formattedDate(date) &&
+                    formattedDate(new Date(s.endDate)) >= formattedDate(date)
+                )
                 .map((s, idx) => (
                   <div
                     key={idx}
@@ -214,10 +219,19 @@ const Calendar = ({ onDateSelect, teamId }) => {
           onClose={() => setSelectedSchedule(null)}
           onEdit={handleEdit}
           onDelete={handleDelete}
+          teamId={teamId}
+          memberMap={
+            teamId
+              ? teamMembers.reduce((acc, user) => {
+                  acc[user.userId] = user.userName;
+                  return acc;
+                }, {})
+              : undefined
+          }
         />
       )}
     </div>
-  );
-};
+    );
+  };
 
 export default Calendar;
