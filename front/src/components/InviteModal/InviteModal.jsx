@@ -7,8 +7,10 @@ import {
 } from "../../api/invitationApi";
 import { fetchTeamMembers, removeTeamMember } from "../../api/teamApi";
 import "./InviteModal.css";
+import { useUser } from "../../contexts/UserContext";
 
 export default function InviteModal({ team, onClose }) {
+  const { user } = useUser();
   const [email, setEmail] = useState("");
   const [pendingInvites, setPendingInvites] = useState([]);
   const [teamMembers, setTeamMembers] = useState([]);
@@ -140,27 +142,24 @@ export default function InviteModal({ team, onClose }) {
             )}
           </ul>
         </div>
-
         <div className="team-members">
           <strong>팀원 목록:</strong>
           <ul>
-            {teamMembers.length > 0 ? (
-              teamMembers.map((member) => (
-                <li key={member.userId} className="canel-gub">
-                  {member.userEmail}
-                  <button
-                    onClick={() =>
-                      handleRemoveMember(member.userId, member.userEmail)
-                    }
-                    className="kick-btn"
-                  >
-                    강퇴
-                  </button>
-                </li>
-              ))
-            ) : (
-              <li>아직 팀원이 없습니다.</li>
-            )}
+          {teamMembers.map((member) => (
+            <li key={member.userId} className="canel-gub">
+              {member.userEmail}
+              {Number(member.userId) !== Number(user?.userId) && (
+                <button
+                  onClick={() =>
+                    handleRemoveMember(member.userId, member.userEmail)
+                  }
+                  className="kick-btn"
+                >
+                  강퇴
+                </button>
+              )}
+            </li>
+          ))}
           </ul>
         </div>
       </div>
