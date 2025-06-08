@@ -33,8 +33,6 @@ export default function ProfileEditForm({ setIsEditing }) {
   
     try {
       const updatedUser = await updateUserInfo(updatedUserData);
-  
-      // ✅ 이름, 이메일, 성별, 비밀번호 중 하나라도 변경되었으면 로그아웃 처리
       const nameChanged = name !== user.name;
       const emailChanged = email !== user.email;
       const genderChanged = genderNumber !== user.gender;
@@ -43,13 +41,11 @@ export default function ProfileEditForm({ setIsEditing }) {
       const sensitiveChanged = nameChanged || emailChanged || genderChanged || passwordChanged;
   
       if (sensitiveChanged) {
-        // 로그아웃 처리
         localStorage.removeItem('user');
         setUser(null);
         alert('회원정보가 변경되어 다시 로그인해주세요.');
         navigate('/');
       } else {
-        // 정보 변경만 되고, 로그인 유지 (사용하지 않겠지만 대비)
         setUser(updatedUser);
         localStorage.setItem('user', JSON.stringify(updatedUser));
         navigate(`/MyCalendar/${updatedUser.userId}`, {
@@ -67,7 +63,6 @@ export default function ProfileEditForm({ setIsEditing }) {
   return (
     <form className="profile-edit-form" onSubmit={handleSubmit}>
       <h2>회원정보 수정</h2>
-
       <label>이름</label>
       <input
         type="text"
@@ -103,8 +98,8 @@ export default function ProfileEditForm({ setIsEditing }) {
       />
 
       <label>성별</label>
-      <div className="gender-options">
-        <label>
+      <div className="radio-group">
+        <p className="custom-radio">
           <input
             type="radio"
             name="gender"
@@ -112,9 +107,10 @@ export default function ProfileEditForm({ setIsEditing }) {
             checked={gender === '남성'}
             onChange={(e) => setGender(e.target.value)}
           />
-          남성
-        </label>
-        <label>
+          <span className="radio-label">남성</span>
+        </p>
+
+        <p className="custom-radio">
           <input
             type="radio"
             name="gender"
@@ -122,15 +118,16 @@ export default function ProfileEditForm({ setIsEditing }) {
             checked={gender === '여성'}
             onChange={(e) => setGender(e.target.value)}
           />
-          여성
-        </label>
+          <span className="radio-label">여성</span>
+        </p>
       </div>
 
+
       <div className="button-group">
-        <button type="button" onClick={() => setIsEditing(false)}>
+        <button type="button" className='edit-btn' onClick={() => setIsEditing(false)}>
           취소
         </button>
-        <button type="submit">
+        <button type="submit" className="delete-btn">
           확인
         </button>
       </div>
