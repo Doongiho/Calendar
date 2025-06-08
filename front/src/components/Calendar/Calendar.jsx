@@ -3,13 +3,22 @@ import "./Calendar.css";
 import ScheduleForm from "../ScheduleForm/ScheduleForm";
 import ScheduleDetailModal from "../ScheduleDetailModal/ScheduleDetailModal";
 import {
-  fetchUserSchedules,
+  fetchUserSchedules,      
   createSchedule,
   updateSchedule,
   deleteSchedule,
 } from "../../api/scheduleApi";
+import {
+  fetchTeamSchedules,
+  createTeamSchedule,
+  updateTeamSchedule,
+  deleteTeamSchedule
+} from "../../api/teamScheduleApi";
+import { useUser } from "../../contexts/UserContext";
 
-const Calendar = ({ onDateSelect, userId }) => {
+const Calendar = ({ onDateSelect, teamId }) => {
+  const { user } = useUser(); 
+  const userId = user?.userId;
   const monthNames = [
     "1월", "2월", "3월", "4월", "5월", "6월",
     "7월", "8월", "9월", "10월", "11월", "12월"
@@ -27,12 +36,17 @@ const Calendar = ({ onDateSelect, userId }) => {
   const currentMonth = currentDate.getMonth();
 
   useEffect(() => {
-    if (userId) {
+    if (teamId) {
+      fetchTeamSchedules(teamId)
+        .then((res) => setSchedules(res.data))
+        .catch((err) => console.error("팀 일정 로드 실패:", err));
+    } else if (userId) {
       fetchUserSchedules(userId)
         .then((res) => setSchedules(res.data))
-        .catch((err) => console.error("일정 불러오기 실패:", err));
+        .catch((err) => console.error("개인 일정 로드 실패:", err));
     }
-  }, [userId]);
+  }, [userId, teamId]);
+  
 
   const formattedDate = (date) => {
     const pad = (n) => (n < 10 ? `0${n}` : `${n}`);
@@ -86,28 +100,58 @@ const Calendar = ({ onDateSelect, userId }) => {
   const handleDelete = (schedule) => {
     const id = schedule.scheduleId || schedule.id;
     if (!id) return alert("삭제할 일정 ID가 없습니다.");
-    deleteSchedule(id)
-      .then(() => setSchedules((prev) => prev.filter((s) => (s.scheduleId || s.id) !== id)))
-      .catch((err) => alert("일정 삭제 중 오류 발생"));
+  
+    const deleteFn = teamId ? deleteTeamSchedule : deleteSchedule;
+  
+    deleteFn(id)
+      .then(() => {
+        setSchedules((prev) => prev.filter((s) => (s.scheduleId || s.id) !== id));
+      })
+      .catch((err) => {
+        console.error("일정 삭제 중 오류:", err);
+        alert("일정 삭제 중 오류 발생");
+      });
   };
 
   const handleFormSubmit = (schedule) => {
-    const id = schedule.scheduleId || schedule.id;
-    const payload = { ...schedule, userId: Number(userId) };
-    if (id) {
-      updateSchedule(id, payload).then((res) => {
-        const updated = { ...res.data, id: res.data.scheduleId };
-        setSchedules((prev) => prev.map((s) => ((s.id || s.scheduleId) === id ? updated : s)));
-      });
+    const payload = {
+      ...schedule,
+      userId: user?.userId,
+      teamId: teamId ? Number(teamId) : undefined,
+    };
+  
+    if (schedule.scheduleId) {
+      const updateFn = teamId ? updateTeamSchedule : updateSchedule;
+      updateFn(schedule.scheduleId, payload)
+        .then((res) => {
+          const updated = {
+            ...res.data,
+            id: res.data.scheduleId,
+            startDate: res.data.startDate.slice(0, 10),
+            endDate: res.data.endDate.slice(0, 10)
+          };
+          setSchedules((prev) =>
+            prev.map((s) => (s.scheduleId === updated.id ? updated : s))
+          );
+        });
     } else {
-      createSchedule(payload).then((res) => {
-        const created = { ...res.data, id: res.data.scheduleId };
-        setSchedules((prev) => [...prev, created]);
-      });
+      const createFn = teamId ? createTeamSchedule : createSchedule;
+      createFn(payload)
+        .then((res) => {
+          const created = {
+            ...res.data,
+            id: res.data.scheduleId,
+            startDate: res.data.startDate.slice(0, 10),
+            endDate: res.data.endDate.slice(0, 10)
+          };
+          setSchedules((prev) => [...prev, created]);
+        });
     }
-    setShowForm(false);
-    setEditingSchedule(null);
   };
+  
+  
+  
+  
 
   return (
     <div className="calendar-container">
@@ -131,10 +175,11 @@ const Calendar = ({ onDateSelect, userId }) => {
           >
             <div className="date-number">{date.getDate()}</div>
             <div className="todo-list-wrap">
-              {schedules
-                .filter(
-                  (s) => s.startDate <= formattedDate(date) && s.endDate >= formattedDate(date)
-                )
+              {schedules.filter(
+                (s) =>
+                  formattedDate(new Date(s.startDate)) <= formattedDate(date) &&
+                  formattedDate(new Date(s.endDate)) >= formattedDate(date)
+              )
                 .map((s, idx) => (
                   <div
                     key={idx}
