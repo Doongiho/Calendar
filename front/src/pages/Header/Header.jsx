@@ -19,6 +19,7 @@ import { deleteUser } from "../../api/userApi";
 import { useUser } from "../../contexts/UserContext";
 import "./Header.css";
 import axiosInstance from "api/axiosInstance";
+import { leaveTeam } from "../../api/teamApi"; 
 
 export default function Header() {
   const location = useLocation();
@@ -212,6 +213,25 @@ export default function Header() {
     }
   };
 
+  const handleLeaveTeam = async (team) => {
+    if (!window.confirm("정말 팀에서 나가시겠습니까?")) return;
+    try {
+      await leaveTeam(team.teamId); 
+      alert("팀에서 나갔습니다.");
+      setTeams((prev) => prev.filter((t) => t.teamId !== team.teamId));
+      setMenuOpen(false);
+      setInviteTeam(null);
+      setSelectedTeam(null);
+      setShowEditTeamModal(false);
+      setShowInvitations(false);
+      navigate(`/mycalendar/${user.userId}`);
+    } catch (err) {
+      console.error("팀 나가기 실패:", err);
+      alert("팀에서 나가기 중 오류가 발생했습니다.");
+    }
+  };
+  
+
   return (
     <>
       {showEditModal && <EditProfile onClose={() => setShowEditModal(false)} />}
@@ -241,7 +261,7 @@ export default function Header() {
             <div className="alarm" onClick={handleAlarmClick}>
               <span className="material-symbols-outlined">notifications</span>
               {invitations.length > 0 && (
-                <span className="invite-btn-list">{invitations.length}</span>
+                <span className="badge">{invitations.length}</span>
               )}
             </div>
             <div className="mypage-box">
@@ -372,7 +392,12 @@ export default function Header() {
                     </button>
                   </div>
                 ) : (
+                    <div className="group-btn">
                       <span className="invite-btn-list">팀원</span>
+                      <button onClick={() => handleLeaveTeam(team)} className="delete-btn-list">
+                        팀에서 나가기
+                      </button>
+                    </div>
                 )}
               </li>
             ))

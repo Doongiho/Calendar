@@ -77,3 +77,13 @@ export const fetchTeamMembers = async (teamId) => {
 export const removeTeamMember = async (teamId, userId) => {
   return await axiosInstance.delete(`/api/teams/${teamId}/members/${userId}`);
 };
+
+
+/**
+ * 로그인 사용자가 현재 팀에서 나가기
+ * @param {number} teamId
+ * @returns {void}
+ */
+export const leaveTeam = async (teamId) => {
+  return await axiosInstance.delete(`/api/teams/${teamId}/members/me`);
+};
