@@ -40,16 +40,27 @@ const Calendar = ({ onDateSelect, teamId }) => {
   useEffect(() => {
     if (teamId) {
       fetchTeamSchedules(teamId)
-        .then((res) => setSchedules(res.data))
+        .then((res) => {
+          const withIds = res.data.map((s) => ({
+            ...s,
+            id: s.teamScheduleId, // team 일정용 ID
+          }));
+          setSchedules(withIds);
+        })
         .catch((err) => console.error("팀 일정 로드 실패:", err));
   
-      fetchTeamMembers(teamId)
-        .then((res) => {
-          setTeamMembers(res.data || res);
-        });
+      fetchTeamMembers(teamId).then((res) =>
+        setTeamMembers(res.data || res)
+      );
     } else if (userId) {
       fetchUserSchedules(userId)
-        .then((res) => setSchedules(res.data))
+        .then((res) => {
+          const withIds = res.data.map((s) => ({
+            ...s,
+            id: s.scheduleId, 
+          }));
+          setSchedules(withIds);
+        })
         .catch((err) => console.error("개인 일정 로드 실패:", err));
     }
   }, [userId, teamId]);
@@ -104,20 +115,31 @@ const Calendar = ({ onDateSelect, teamId }) => {
   };
 
   const handleDelete = (schedule) => {
-    const id = schedule.scheduleId || schedule.id;
-    if (!id) return alert("삭제할 일정 ID가 없습니다.");
-
-    const deleteFn = teamId ? deleteTeamSchedule : deleteSchedule;
-
+    const id = schedule.id || schedule.scheduleId || schedule.teamScheduleId;
+  
+    if (!id) {
+      alert("삭제할 일정 ID가 없습니다.");
+      return;
+    }
+  
+    const deleteFn =
+      teamId || schedule.teamScheduleId ? deleteTeamSchedule : deleteSchedule;
+  
     deleteFn(id)
       .then(() => {
-        setSchedules((prev) => prev.filter((s) => (s.scheduleId || s.id) !== id));
+        setSchedules((prev) =>
+          prev.filter((s) => {
+            const sId = s.id || s.scheduleId || s.teamScheduleId;
+            return sId !== id;
+          })
+        );
       })
       .catch((err) => {
         console.error("일정 삭제 중 오류:", err);
         alert("일정 삭제 중 오류 발생");
       });
   };
+  
 
   const handleFormSubmit = (schedule) => {
     const payload = {
@@ -125,26 +147,28 @@ const Calendar = ({ onDateSelect, teamId }) => {
       userId: user?.userId,
       teamId: teamId ? Number(teamId) : undefined,
     };
-
-    if (schedule.scheduleId) {
-      const updateFn = teamId ? updateTeamSchedule : updateSchedule;
-      updateFn(schedule.scheduleId, payload).then((res) => {
+  
+    const updateFn = teamId ? updateTeamSchedule : updateSchedule;
+    const createFn = teamId ? createTeamSchedule : createSchedule;
+  
+    if (schedule.scheduleId || schedule.teamScheduleId) {
+      const id = schedule.scheduleId || schedule.teamScheduleId;
+      updateFn(id, payload).then((res) => {
         const updated = {
           ...res.data,
-          id: res.data.scheduleId,
+          id: res.data.scheduleId || res.data.teamScheduleId,
           startDate: res.data.startDate.slice(0, 10),
           endDate: res.data.endDate.slice(0, 10),
         };
         setSchedules((prev) =>
-          prev.map((s) => (s.scheduleId === updated.id ? updated : s))
+          prev.map((s) => (s.id === updated.id ? updated : s))
         );
       });
     } else {
-      const createFn = teamId ? createTeamSchedule : createSchedule;
       createFn(payload).then((res) => {
         const created = {
           ...res.data,
-          id: res.data.scheduleId,
+          id: res.data.scheduleId || res.data.teamScheduleId,
           startDate: res.data.startDate.slice(0, 10),
           endDate: res.data.endDate.slice(0, 10),
         };

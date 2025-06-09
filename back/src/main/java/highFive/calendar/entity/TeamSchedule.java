@@ -22,37 +22,33 @@ import java.util.List;
 
 public class TeamSchedule {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long teamScheduleId;
+        @Id
+        @GeneratedValue(strategy = GenerationType.IDENTITY)
+        private Long teamScheduleId;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "team_id", nullable = false, foreignKey = @ForeignKey(
-            name = "fk_teamschedule_team",
-            foreignKeyDefinition = "FOREIGN KEY(team_id) REFERENCES team(team_id) ON DELETE CASCADE"))
-    @OnDelete(action = OnDeleteAction.CASCADE)
-    private Team team;
+        @ManyToOne(fetch = FetchType.LAZY, optional = false)
+        @JoinColumn(name = "team_id", nullable = false, foreignKey = @ForeignKey(name = "fk_teamschedule_team", foreignKeyDefinition = "FOREIGN KEY(team_id) REFERENCES team(team_id) ON DELETE CASCADE"))
+        @OnDelete(action = OnDeleteAction.CASCADE)
+        private Team team;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", foreignKey = @ForeignKey(
-            name = "fk_teamschedule_user",
-            foreignKeyDefinition = "FOREIGN KEY(user_id) REFERENCES users(user_id) ON DELETE SET NULL"))
-    private User user;
+        @ManyToOne(fetch = FetchType.LAZY)
+        @JoinColumn(name = "user_id", foreignKey = @ForeignKey(name = "fk_teamschedule_user", foreignKeyDefinition = "FOREIGN KEY(user_id) REFERENCES users(user_id) ON DELETE SET NULL"))
+        private User user;
 
-    @Column(nullable = false)
-    private LocalDateTime startDate;
+        @Column(nullable = false)
+        private LocalDateTime startDate;
 
-    @Column(nullable = false)
-    private LocalDateTime endDate;
+        @Column(nullable = false)
+        private LocalDateTime endDate;
 
-    @Column(nullable = false)
-    private String title;
+        @Column(nullable = false)
+        private String title;
 
-    @Column
-    private String description;
+        @Column
+        private String description;
 
-    @Column
-    @Enumerated(EnumType.STRING)
-    private ScheduleColor color;
+        @Column
+        @Enumerated(EnumType.STRING)
+        private ScheduleColor color;
 
 }

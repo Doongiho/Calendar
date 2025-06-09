@@ -21,9 +21,7 @@ public class Schedule {
     private Long scheduleId;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "user_id", foreignKey = @ForeignKey(
-            name = "fk_schedule_user",
-            foreignKeyDefinition = "FOREIGN KEY(user_id) REFERENCES users(user_id) ON DELETE CASCADE"))
+    @JoinColumn(name = "user_id", foreignKey = @ForeignKey(name = "fk_schedule_user", foreignKeyDefinition = "FOREIGN KEY(user_id) REFERENCES users(user_id) ON DELETE CASCADE"))
     @OnDelete(action = OnDeleteAction.CASCADE)
     private User user;
 
