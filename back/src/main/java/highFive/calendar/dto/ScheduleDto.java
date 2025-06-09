@@ -3,7 +3,7 @@ package highFive.calendar.dto;
 import highFive.calendar.enums.ScheduleColor;
 import lombok.*;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -15,7 +15,7 @@ public class ScheduleDto {
     private Long userId;
     private String title;
     private String description;
-    private LocalDate startDate;
-    private LocalDate endDate;
+    private LocalDateTime startDate;
+    private LocalDateTime endDate;
     private ScheduleColor color;
 }

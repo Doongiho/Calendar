@@ -6,7 +6,7 @@ import lombok.*;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Getter
@@ -27,8 +27,8 @@ public class Schedule {
 
     private String title;
     private String description;
-    private LocalDate startDate;
-    private LocalDate endDate;
+    private LocalDateTime startDate;
+    private LocalDateTime endDate;
 
     @Enumerated(EnumType.STRING)
     private ScheduleColor color;
