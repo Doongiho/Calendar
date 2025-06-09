@@ -8,6 +8,10 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -39,6 +43,7 @@ public class User implements UserDetails {
     // 개인 스케줄
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
+    @JsonBackReference
     private List<Schedule> schedules = new ArrayList<>();
 
     // 유저가 생성한 팀 (팀 생성자)

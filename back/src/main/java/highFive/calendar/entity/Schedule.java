@@ -6,6 +6,9 @@ import lombok.*;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 import java.time.LocalDateTime;
 
 @Entity
@@ -14,6 +17,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Schedule {
 
     @Id
@@ -23,6 +27,7 @@ public class Schedule {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id", foreignKey = @ForeignKey(name = "fk_schedule_user", foreignKeyDefinition = "FOREIGN KEY(user_id) REFERENCES users(user_id) ON DELETE CASCADE"))
     @OnDelete(action = OnDeleteAction.CASCADE)
+    @JsonManagedReference
     private User user;
 
     private String title;

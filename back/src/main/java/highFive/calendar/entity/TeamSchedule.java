@@ -9,6 +9,8 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -21,7 +23,7 @@ import java.util.List;
 @Builder
 
 public class TeamSchedule {
-
+        
         @Id
         @GeneratedValue(strategy = GenerationType.IDENTITY)
         private Long teamScheduleId;
@@ -29,6 +31,7 @@ public class TeamSchedule {
         @ManyToOne(fetch = FetchType.LAZY, optional = false)
         @JoinColumn(name = "team_id", nullable = false, foreignKey = @ForeignKey(name = "fk_teamschedule_team", foreignKeyDefinition = "FOREIGN KEY(team_id) REFERENCES team(team_id) ON DELETE CASCADE"))
         @OnDelete(action = OnDeleteAction.CASCADE)
+        @JsonManagedReference
         private Team team;
 
         @ManyToOne(fetch = FetchType.LAZY)

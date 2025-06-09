@@ -21,22 +21,24 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
-@EnableWebSecurity  //  Spring Security 활성화
-@EnableMethodSecurity   //  메서드 단위 보안 활성화
+@EnableWebSecurity // Spring Security 활성화
+@EnableMethodSecurity // 메서드 단위 보안 활성화
 public class SecurityConfig {
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity, JwtAuthenticationFilter jwtAuthenticationFilter) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity,
+            JwtAuthenticationFilter jwtAuthenticationFilter) throws Exception {
         httpSecurity
-                .csrf(csrf -> csrf.disable())   //  REST API 는 CSRF 보호 비활성화
-                .cors(Customizer.withDefaults())    //  WebConfig 설정 사용
-                .authorizeHttpRequests(auth -> auth.requestMatchers("/","/api/users/register", "/api/users/login").permitAll()   //  인증 없이 접근 허용
-                .requestMatchers(HttpMethod.PUT, "/api/users/me").authenticated()
-                .anyRequest().authenticated()   //  그 외 모든 요청은 인증 필요
-                )
-                .addFilterBefore(   //  JWT 필터 추가
-                        jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class
-                );
+                .csrf(csrf -> csrf.disable()) // REST API 는 CSRF 보호 비활성화
+                .cors(Customizer.withDefaults()) // WebConfig 설정 사용
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/", "/api/users/register", "/api/users/login").permitAll()
+                        // WebSocket 연결 경로 및 info 요청 예외 추가
+                        .requestMatchers("/ws/**", "/ws/info/**").permitAll()
+                        .requestMatchers(HttpMethod.PUT, "/api/users/me").authenticated()
+                        .anyRequest().authenticated())
+                .addFilterBefore( // JWT 필터 추가
+                        jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         return httpSecurity.build();
     }
 
@@ -45,4 +47,3 @@ public class SecurityConfig {
         return configuration.getAuthenticationManager();
     }
 }
-

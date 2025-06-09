@@ -24,6 +24,6 @@ public class TeamScheduleDto {
     private ScheduleColor color;
     private LocalDateTime startDate;
     private LocalDateTime endDate;
-
+    private String type; // "create", "update", "delete"
 
 }

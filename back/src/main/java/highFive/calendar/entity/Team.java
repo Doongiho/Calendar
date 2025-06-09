@@ -9,6 +9,9 @@ import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 import org.springframework.data.annotation.CreatedDate;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -21,7 +24,7 @@ import java.util.List;
 @Builder
 
 public class Team {
-
+    
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long teamId;
@@ -46,6 +49,7 @@ public class Team {
     private List<TeamMember> teamMembers = new ArrayList<>();    //  1 팀 M 팀 멤버
 
     @OneToMany(mappedBy = "team", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
     private List<TeamSchedule> teamSchedules = new ArrayList<>();   //  1 팀 M 팀 스케쥴
 
     @OneToMany(mappedBy = "team", cascade = CascadeType.ALL, orphanRemoval = true)

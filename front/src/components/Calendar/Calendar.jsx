@@ -16,7 +16,9 @@ import {
 } from "../../api/teamScheduleApi";
 import { fetchTeamMembers } from "../../api/teamApi";
 import { useUser } from "../../contexts/UserContext";
-
+import SockJS from "sockjs-client";
+import { Client } from "@stomp/stompjs";
+import { useRef } from "react";
 const Calendar = ({ onDateSelect, teamId }) => {
   const { user } = useUser();
   const userId = user?.userId;
@@ -36,19 +38,20 @@ const Calendar = ({ onDateSelect, teamId }) => {
 
   const currentYear = currentDate.getFullYear();
   const currentMonth = currentDate.getMonth();
-
+  const stompClient = useRef(null);
   useEffect(() => {
     if (teamId) {
       fetchTeamSchedules(teamId)
         .then((res) => {
           const withIds = res.data.map((s) => ({
             ...s,
-            id: s.teamScheduleId, // team 일정용 ID
+            id: s.teamScheduleId,
           }));
           setSchedules(withIds);
+          connectWebSocketForTeam(teamId);  // 팀 일정 WebSocket 연결
         })
         .catch((err) => console.error("팀 일정 로드 실패:", err));
-  
+
       fetchTeamMembers(teamId).then((res) =>
         setTeamMembers(res.data || res)
       );
@@ -57,13 +60,164 @@ const Calendar = ({ onDateSelect, teamId }) => {
         .then((res) => {
           const withIds = res.data.map((s) => ({
             ...s,
-            id: s.scheduleId, 
+            id: s.scheduleId,
           }));
           setSchedules(withIds);
+          connectWebSocketForUser(userId);  // **개인 일정 WebSocket 연결 추가**
         })
         .catch((err) => console.error("개인 일정 로드 실패:", err));
     }
+
+    // 컴포넌트 언마운트 시 연결 해제
+    return () => {
+      if (stompClient.current) {
+        stompClient.current.deactivate();
+        stompClient.current = null;
+      }
+    };
   }, [userId, teamId]);
+
+
+  // JWT 토큰 가져오는 헬퍼
+  function getToken() {
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      const { token } = JSON.parse(storedUser);
+      // 'Bearer ' 접두어 제거
+      if (token?.startsWith("Bearer ")) {
+        return token.slice(7);
+      }
+      return token;
+    }
+    return null;
+  }
+
+
+  // 팀용 WebSocket 연결 함수
+  function connectWebSocketForTeam(teamId) {
+    if (stompClient.current && stompClient.current.active) return;
+
+    const token = getToken();
+    const socket = new SockJS(`http://localhost:8080/ws?token=${encodeURIComponent(token)}`);
+
+    stompClient.current = new Client({
+      webSocketFactory: () => socket,
+      connectHeaders: { token },  // 제거 가능
+      debug: (str) => {
+        console.log(str);  // 디버깅 위해 주석 해제 추천
+      },
+      onConnect: () => {
+        console.log("WebSocket connected for team:", teamId);
+        // stompClient.current.subscribe(`/topic/team/${teamId}`, (message) => {
+        //   if (message.body) {
+        //     const { type, payload } = JSON.parse(message.body);
+
+        //     setSchedules((prev) => {
+        //       const id = payload.teamScheduleId;
+        //       switch (type) {
+        //         case "created":
+        //         case "updated":
+        //           const exists = prev.some((s) => s.id === id);
+        //           const updated = { ...payload, id };
+        //           return exists
+        //             ? prev.map((s) => (s.id === id ? updated : s))
+        //             : [...prev, updated];
+
+        //         case "deleted":
+        //           return prev.filter((s) => s.id !== id);
+
+        //         default:
+        //           console.warn("알 수 없는 WebSocket 메시지 타입:", type);
+        //           return prev;
+        //       }
+        //     });
+        //   }
+        // });
+        stompClient.current.subscribe(`/topic/team/${teamId}`, (message) => {
+          if (message.body) {
+            const updatedSchedule = JSON.parse(message.body);
+            setSchedules((prev) => {
+              const exists = prev.some((s) => s.id === updatedSchedule.teamScheduleId);
+              if (exists) {
+                return prev.map((s) =>
+                  s.id === updatedSchedule.teamScheduleId
+                    ? { ...updatedSchedule, id: updatedSchedule.teamScheduleId }
+                    : s
+                );
+              } else {
+                return [...prev, { ...updatedSchedule, id: updatedSchedule.teamScheduleId }];
+              }
+            });
+          }
+        });
+      },
+      onStompError: (frame) => {
+        console.error("STOMP error:", frame);
+      },
+      onDisconnect: () => {
+        console.log("WebSocket disconnected");
+      },
+    });
+
+    stompClient.current.activate();
+  }
+  function connectWebSocketForUser(userId) {
+    if (stompClient.current && stompClient.current.active) return;
+
+    const token = getToken();
+    const socket = new SockJS(`http://localhost:8080/ws?token=${encodeURIComponent(token)}`);
+
+    stompClient.current = new Client({
+      webSocketFactory: () => socket,
+      connectHeaders: { token },
+      debug: (str) => {
+        console.log(str);
+      },
+      onConnect: () => {
+        console.log("WebSocket connected for user:", userId);
+
+        // 개인 일정용 구독
+        stompClient.current.subscribe(`/user/queue/schedule`, (message) => {
+          if (message.body) {
+            const msg = JSON.parse(message.body);
+
+            // 메시지에 type이 없으면 기본 created로 간주
+            const type = msg.type || "created";
+            const payload = msg.payload || msg; // 기존 호환용
+
+            const id = payload.scheduleId;
+
+            setSchedules((prev) => {
+              if (type === "deleted") {
+                // 삭제면 배열에서 제거
+                return prev.filter((s) => s.id !== id);
+              } else {
+                // created/updated면 있으면 덮어쓰기, 없으면 추가
+                const exists = prev.some((s) => s.id === id);
+                if (exists) {
+                  return prev.map((s) =>
+                    s.id === id ? { ...payload, id } : s
+                  );
+                } else {
+                  return [...prev, { ...payload, id }];
+                }
+              }
+            });
+          }
+        });
+      },
+      onStompError: (frame) => {
+        console.error("STOMP error:", frame);
+      },
+      onDisconnect: () => {
+        console.log("WebSocket disconnected");
+      },
+    });
+
+    stompClient.current.activate();
+  }
+
+
 
   const formattedDate = (date) => {
     const pad = (n) => (n < 10 ? `0${n}` : `${n}`);
@@ -116,15 +270,15 @@ const Calendar = ({ onDateSelect, teamId }) => {
 
   const handleDelete = (schedule) => {
     const id = schedule.id || schedule.scheduleId || schedule.teamScheduleId;
-  
+
     if (!id) {
       alert("삭제할 일정 ID가 없습니다.");
       return;
     }
-  
+
     const deleteFn =
       teamId || schedule.teamScheduleId ? deleteTeamSchedule : deleteSchedule;
-  
+
     deleteFn(id)
       .then(() => {
         setSchedules((prev) =>
@@ -139,7 +293,7 @@ const Calendar = ({ onDateSelect, teamId }) => {
         alert("일정 삭제 중 오류 발생");
       });
   };
-  
+
 
   const handleFormSubmit = (schedule) => {
     const payload = {
@@ -147,10 +301,10 @@ const Calendar = ({ onDateSelect, teamId }) => {
       userId: user?.userId,
       teamId: teamId ? Number(teamId) : undefined,
     };
-  
+
     const updateFn = teamId ? updateTeamSchedule : updateSchedule;
     const createFn = teamId ? createTeamSchedule : createSchedule;
-  
+
     if (schedule.scheduleId || schedule.teamScheduleId) {
       const id = schedule.scheduleId || schedule.teamScheduleId;
       updateFn(id, payload).then((res) => {
@@ -163,16 +317,12 @@ const Calendar = ({ onDateSelect, teamId }) => {
         setSchedules((prev) =>
           prev.map((s) => (s.id === updated.id ? updated : s))
         );
+        setEditingSchedule(null);  // 수정 완료 후 초기화
+        setShowForm(false);         // 폼 닫기 (선택 사항)
       });
     } else {
-      createFn(payload).then((res) => {
-        const created = {
-          ...res.data,
-          id: res.data.scheduleId || res.data.teamScheduleId,
-          startDate: res.data.startDate.slice(0, 10),
-          endDate: res.data.endDate.slice(0, 10),
-        };
-        setSchedules((prev) => [...prev, created]);
+      createFn(payload).then(() => {
+        // ✅ WebSocket 통해서 일정이 추가되므로 setSchedules 하지 않음
       });
     }
   };
@@ -247,15 +397,15 @@ const Calendar = ({ onDateSelect, teamId }) => {
           memberMap={
             teamId
               ? teamMembers.reduce((acc, user) => {
-                  acc[user.userId] = user.userName;
-                  return acc;
-                }, {})
+                acc[user.userId] = user.userName;
+                return acc;
+              }, {})
               : undefined
           }
         />
       )}
     </div>
-    );
-  };
+  );
+};
 
 export default Calendar;
