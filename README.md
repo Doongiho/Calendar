@@ -1,7 +1,7 @@
 # 🗓️ Calendar
 
 **개인 일정 및 팀 일정을 관리할 수 있는 풀스택 캘린더 앱입니다.**
-React + TypeScript + Express + JWT + MSSQL을 기반으로 구현되었으며, 사용자 인증과 팀 단위 협업 기능을 포함합니다.
+React + Express + JWT + MSSQL을 기반으로 구현되었으며, 사용자 인증과 팀 단위 협업 기능을 포함합니다.
 
 ---
 
