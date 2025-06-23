@@ -1,145 +1,104 @@
-/* 전체 배경 */
-.login-container {
+/* 전체 페이지 배경 및 정렬 */
+html,
+body {
+  margin: 0;
   width: 100vw;
   height: 100vh;
   background-color: #3c5aff;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
   align-items: center;
 }
 
-html,
-body {
-  margin: 0;
-  padding: 0;
-  height: 100%;
-  overflow: hidden;
-  /* ← 스크롤 막기 */
-}
-
-/* 전체 콘텐츠 정렬 */
-.login-content {
-  display: flex;
-  width: 1920px;
-  height: 1080px;
-  padding: 0 100px;
-  box-sizing: border-box;
-  align-items: center;
-  justify-content: space-between;
-}
-
-/* 왼쪽 영역 */
-.login-left {
+.signup-page {
+  width: 100vw;
+  height: 100vh;
+  background-color: #3c5aff;
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  position: relative;
-  height: 100%;
+  align-items: center;
 }
 
-/* 사진 */
-.login-logo {
+/* 상단 로고 */
+.signup-header {
+  padding: 1rem 2rem;
+  text-align: left;
+}
+
+.signup-logo {
   width: 80px;
   height: 80px;
-  position: absolute;
-  top: 150px;
-  left: 0;
 }
 
-.login-message {
+/* 본문 */
+.signup-main {
+  width: 100%;
+  max-width: 1200px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 80%;
+  flex-direction: row;
+  gap: 10rem;
+}
+
+.signup-left {
+  text-align: center;
+}
+
+.signup-message {
   color: white;
   font-size: 48px;
   font-weight: bold;
   line-height: 68px;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  padding-left: 120px;
 }
 
-/* 오른쪽 영역 */
-.login-right {
-  display: flex;
+/* 우측 입력 박스 영역 */
+.signup-right {
   align-items: center;
-  justify-content: center;
-  height: 100%;
-}
-
-/* 로그인 박스 */
-.login-box {
-  width: 648px;
-  height: 598px;
+  width: 90%;
   background-color: white;
   border-radius: 20px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
   display: flex;
-  /* 중앙 정렬을 위한 설정 */
-  align-items: center;
+  flex-direction: column;
   justify-content: center;
+  max-width: 410px;
 }
 
-/* 회원가입 박스 */
+/* 내부 폼 영역 */
 .signup-box {
-  width: 648px;
-  height: 792px;
-  background-color: white;
-  border-radius: 20px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
-  display: flex;
-  /* 중앙 정렬을 위한 설정 */
-  align-items: center;
-  justify-content: center;
-}
-
-.login-inner {
-  width: 100%;
-  padding: 0 85px;
   display: flex;
   flex-direction: column;
   justify-content: center;
+  padding: 1.54rem 0;
+  width: 80%;
 }
 
-/* 폼 내부 요소들 */
-.login-title {
+.signup-title {
   font-size: 22px;
-  /* 큼직하고 */
   font-weight: 700;
-  /* 굵고 */
   color: #222;
   line-height: 1.6;
   margin-bottom: 32px;
 }
 
-.login-label {
-  font-size: 14px;
-  color: #555;
-  margin-bottom: 6px;
-  display: block;
-}
-
-.login-button {
+.signup-button {
   width: 100%;
   padding: 14px 0;
-  color: white;
-  font-weight: 600;
   border: none;
   border-radius: 6px;
+  font-weight: 600;
+  color: white;
   margin-bottom: 16px;
-  cursor: not-allowed;
 }
 
-.login-footer {
+/* 공통 스타일 */
+.signup-footer {
   display: flex;
   justify-content: space-between;
   font-size: 14px;
   align-items: center;
-}
-
-.checkbox {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  color: #555;
 }
 
 .signup-link {
@@ -151,17 +110,14 @@ body {
   text-decoration: underline;
 }
 
-.signup-title {
-  font-size: 22px;
-  /* 큼직하고 */
-  font-weight: 700;
-  /* 굵고 */
-  color: #222;
-  line-height: 1.6;
-  margin-bottom: 32px;
-  text-align: center;
+.checkbox {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #555;
 }
 
+/* 성별 선택 */
 .gender-toggle {
   display: flex;
   gap: 12px;
@@ -182,4 +138,25 @@ body {
   background-color: #3c5aff;
   color: white;
   border-color: #3c5aff;
+}
+
+/* 반응형 */
+@media (max-width: 768px) {
+  .signup-main {
+    flex-direction: column;
+    gap: 30px;
+    height: 80%;
+  }
+
+  .signup-left,
+  .signup-right {
+    width: 100%;
+    max-width: none;
+    padding: 0 1.5rem;
+  }
+
+  .signup-message {
+    font-size: 36px;
+    line-height: 1.4;
+  }
 }
